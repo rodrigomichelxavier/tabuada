@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#7c3aed" />
+    <title>Tabuada Quest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell" id="app">
+      <section class="screen hero-screen active" data-screen="home" aria-labelledby="home-title">
+        <div class="sky-orb orb-one"></div>
+        <div class="sky-orb orb-two"></div>
+        <div class="hero-card glass-card">
+          <div class="mascot" aria-hidden="true">🚀</div>
+          <p class="eyebrow">Missão matemática</p>
+          <h1 id="home-title">Tabuada Quest</h1>
+          <p class="hero-copy">Ganhe moedas resolvendo contas e troque seus acertos por minutos de celular combinados com seus pais.</p>
+          <div class="hero-badges" aria-label="Benefícios do jogo">
+            <span>🪙 Moedas</span>
+            <span>⚡ Feedback rápido</span>
+            <span>🎮 Mobile first</span>
+          </div>
+          <button class="primary-button" data-action="start">Iniciar aventura</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="choose-table" aria-labelledby="choose-title">
+        <header class="top-header compact">
+          <button class="ghost-button small" data-action="back-home" aria-label="Voltar para o início">←</button>
+          <div>
+            <p class="eyebrow">Primeira escolha</p>
+            <h2 id="choose-title">Qual tabuada vamos treinar?</h2>
+          </div>
+        </header>
+        <div class="choice-grid" id="table-options" aria-label="Escolha uma tabuada"></div>
+      </section>
+
+      <section class="screen" data-screen="choose-mode" aria-labelledby="mode-title">
+        <header class="top-header compact">
+          <button class="ghost-button small" data-action="back-tables" aria-label="Voltar para tabuadas">←</button>
+          <div>
+            <p class="eyebrow">Tabuada escolhida</p>
+            <h2 id="mode-title">Como você quer começar?</h2>
+          </div>
+        </header>
+        <div class="selected-pill" id="selected-table-label">Tabuada do 2</div>
+        <div class="mode-cards">
+          <button class="mode-card" data-mode="play">
+            <span class="mode-icon">🎯</span>
+            <strong>Jogar</strong>
+            <small>Responder contas e ganhar moedas agora.</small>
+          </button>
+          <button class="mode-card" data-mode="memorize">
+            <span class="mode-icon">📚</span>
+            <strong>Memorizar</strong>
+            <small>Ver a tabuada preenchida antes do desafio.</small>
+          </button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="memorize" aria-labelledby="memorize-title">
+        <header class="top-header compact">
+          <button class="ghost-button small" data-action="back-mode" aria-label="Voltar para modo">←</button>
+          <div>
+            <p class="eyebrow">Hora de decorar</p>
+            <h2 id="memorize-title">Memorize a tabuada</h2>
+          </div>
+        </header>
+        <div class="memory-card glass-card">
+          <div class="memory-heading">
+            <span>🧠</span>
+            <strong id="memory-title">Tabuada do 2</strong>
+          </div>
+          <ol class="memory-list" id="memory-list"></ol>
+          <button class="primary-button" data-action="ready-play">Estou pronto pra Jogar</button>
+        </div>
+      </section>
+
+      <section class="screen play-screen" data-screen="play" aria-labelledby="play-title">
+        <header class="scoreboard" aria-label="Painel de pontuação">
+          <article class="score-card">
+            <span>🪙</span>
+            <div><small>Moedas</small><strong id="coins">0</strong></div>
+          </article>
+          <article class="score-card">
+            <span>✅</span>
+            <div><small>Acertos</small><strong id="streak">0/10</strong></div>
+          </article>
+          <article class="score-card">
+            <span>⏱️</span>
+            <div><small>Celular</small><strong id="minutes-preview">0 min</strong></div>
+          </article>
+        </header>
+
+        <div class="game-stage glass-card">
+          <div class="stage-topline">
+            <p class="eyebrow" id="table-indicator">Tabuada do 2</p>
+            <span class="level-chip">+10 moedas por acerto</span>
+          </div>
+          <h2 id="play-title">Quanto é?</h2>
+          <div class="question-bubble" id="question">2 × 1</div>
+          <form class="answer-form" id="answer-form">
+            <label for="answer-input">Digite sua resposta</label>
+            <div class="input-row">
+              <input id="answer-input" type="number" inputmode="numeric" autocomplete="off" placeholder="?" required />
+              <button class="primary-button" type="submit">Responder</button>
+            </div>
+          </form>
+          <div class="feedback" id="feedback" role="status" aria-live="polite">Boa sorte, pequeno mestre!</div>
+          <div class="progress-track" aria-label="Progresso da tabuada atual">
+            <span id="progress-bar"></span>
+          </div>
+        </div>
+
+        <footer class="bottom-actions">
+          <button class="secondary-button" data-action="finish">Finalizar e Contar Moedas</button>
+          <button class="primary-button" data-action="continue">Continuar jogando</button>
+        </footer>
+      </section>
+
+      <section class="screen" data-screen="result" aria-labelledby="result-title">
+        <div class="result-card glass-card">
+          <div class="trophy" aria-hidden="true">🏆</div>
+          <p class="eyebrow">Missão concluída</p>
+          <h2 id="result-title">Você juntou <span id="final-coins">0</span> moedas!</h2>
+          <p class="result-text">Cada 10 moedas valem 5 minutos de tempo no celular.</p>
+          <div class="phone-time">
+            <span>📱</span>
+            <strong id="final-minutes">0 minutos</strong>
+          </div>
+          <div class="result-actions">
+            <button class="primary-button" data-action="play-again">Jogar novamente</button>
+            <button class="ghost-button" data-action="back-home">Tela inicial</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="confetti-layer" id="confetti-layer" aria-hidden="true"></div>
+    <script src="app.js" defer></script>
+  </body>
+</html>
