@@ -92,9 +92,9 @@ function startRound(table = state.selectedTable) {
   showScreen("play");
 }
 
-function renderQuestion() {
+function renderQuestion(previousMultiplier = null) {
   state.answeredCurrentQuestion = false;
-  const multiplier = pickUnansweredMultiplier();
+  const multiplier = pickUnansweredMultiplier(previousMultiplier);
   state.currentMultiplier = multiplier;
   tableIndicator.textContent = state.isRandomMode
     ? `Tabuada sorteada: ${state.currentTable}`
@@ -104,35 +104,33 @@ function renderQuestion() {
   updateScoreboard();
 }
 
-function pickUnansweredMultiplier() {
+function pickUnansweredMultiplier(previousMultiplier = null) {
   const unanswered = Array.from({ length: MAX_MULTIPLIER }, (_, index) => index + 1)
     .filter((multiplier) => !state.hitsInCurrentTable.has(multiplier));
+  const options = unanswered.filter((multiplier) => multiplier !== previousMultiplier);
+  const availableMultipliers = options.length > 0 ? options : unanswered;
 
-  if (unanswered.length === 0) {
+  if (availableMultipliers.length === 0) {
     return randomMultiplier();
   }
 
-  return unanswered[Math.floor(Math.random() * unanswered.length)];
+  return availableMultipliers[Math.floor(Math.random() * availableMultipliers.length)];
 }
 
 function checkAnswer(event) {
   event.preventDefault();
 
-  if (state.answeredCurrentQuestion) {
-    renderQuestion();
-    return;
-  }
-
+  const answeredMultiplier = state.currentMultiplier;
   const givenAnswer = Number(answerInput.value);
-  const rightAnswer = state.currentTable * state.currentMultiplier;
+  const rightAnswer = state.currentTable * answeredMultiplier;
 
   if (givenAnswer === rightAnswer) {
     rewardCorrectAnswer();
     return;
   }
 
-  setFeedback(`Quase! ${state.currentTable} × ${state.currentMultiplier} = ${rightAnswer}. Tente a próxima!`, "error");
-  state.answeredCurrentQuestion = true;
+  setFeedback(`Quase! ${state.currentTable} × ${answeredMultiplier} = ${rightAnswer}. Tente a próxima!`, "error");
+  showNextQuestion(answeredMultiplier);
 }
 
 function rewardCorrectAnswer() {
@@ -151,19 +149,23 @@ function rewardCorrectAnswer() {
     burstConfetti(18);
   }
 
-  updateScoreboard();
+  showNextQuestion(state.currentMultiplier);
+}
+
+function showNextQuestion(previousMultiplier) {
+  if (state.hitsInCurrentTable.size === MAX_MULTIPLIER) {
+    if (state.isRandomMode) {
+      resetTableProgress(randomTable());
+    } else {
+      state.hitsInCurrentTable = new Set();
+    }
+  }
+
+  renderQuestion(previousMultiplier);
 }
 
 function continuePlaying() {
-  if (state.isRandomMode && state.hitsInCurrentTable.size === MAX_MULTIPLIER) {
-    resetTableProgress(randomTable());
-  }
-
-  if (!state.isRandomMode && state.hitsInCurrentTable.size === MAX_MULTIPLIER) {
-    state.hitsInCurrentTable = new Set();
-  }
-
-  renderQuestion();
+  showNextQuestion(state.currentMultiplier);
   setFeedback("Nova conta na tela. Você consegue!", "neutral");
 }
 
