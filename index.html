@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20260529-autonext" />
+    <link rel="stylesheet" href="styles.css?v=20260529-game-dynamics" />
   </head>
   <body>
     <main class="app-shell" id="app">
@@ -19,11 +19,11 @@
           <div class="mascot" aria-hidden="true">🚀</div>
           <p class="eyebrow">Missão matemática</p>
           <h1 id="home-title">Tabuada Quest</h1>
-          <p class="hero-copy">Ganhe moedas resolvendo contas e troque seus acertos por minutos de celular combinados com seus pais.</p>
+          <p class="hero-copy">Resolva missões de tabuada, ganhe moedas e transforme matemática em tempo de celular combinado com seus pais.</p>
           <div class="hero-badges" aria-label="Benefícios do jogo">
-            <span>🪙 Moedas</span>
-            <span>⚡ Feedback rápido</span>
-            <span>🎮 Mobile first</span>
+            <span>🪙 1 moeda por acerto</span>
+            <span>⚡ Bônus de velocidade</span>
+            <span>🎮 Missão mobile</span>
           </div>
           <button class="primary-button" data-action="start">Iniciar aventura</button>
         </div>
@@ -93,14 +93,18 @@
           </article>
           <article class="score-card">
             <span>⏱️</span>
-            <div><small>Celular</small><strong id="minutes-preview">0 min</strong></div>
+            <div><small>Tempo</small><strong id="timer">0s</strong></div>
+          </article>
+          <article class="score-card">
+            <span>📱</span>
+            <div><small>Celular</small><strong id="minutes-preview">00:00</strong></div>
           </article>
         </header>
 
         <div class="game-stage glass-card">
           <div class="stage-topline">
             <p class="eyebrow" id="table-indicator">Tabuada do 2</p>
-            <span class="level-chip">+10 moedas por acerto</span>
+            <span class="level-chip">1 acerto = 1 moeda • Gabarito = +10</span>
           </div>
           <h2 id="play-title">Quanto é?</h2>
           <div class="question-bubble" id="question">2 × 1</div>
@@ -119,7 +123,7 @@
 
         <footer class="bottom-actions">
           <button class="secondary-button" data-action="finish">Finalizar e Contar Moedas</button>
-          <button class="primary-button" data-action="continue">Continuar jogando</button>
+          <button class="primary-button" data-action="choose-table">Escolher outra Tabuada</button>
         </footer>
       </section>
 
@@ -128,10 +132,10 @@
           <div class="trophy" aria-hidden="true">🏆</div>
           <p class="eyebrow">Missão concluída</p>
           <h2 id="result-title">Você juntou <span id="final-coins">0</span> moedas!</h2>
-          <p class="result-text">Cada 10 moedas valem 5 minutos de tempo no celular.</p>
+          <p class="result-text">Cada 20 moedas valem 5 minutos de celular. O tempo aparece em HH:MM.</p>
           <div class="phone-time">
             <span>📱</span>
-            <strong id="final-minutes">0 minutos</strong>
+            <strong id="final-minutes">00:00</strong>
           </div>
           <div class="result-actions">
             <button class="primary-button" data-action="play-again">Jogar novamente</button>
@@ -141,7 +145,9 @@
       </section>
     </main>
 
+    <div class="speed-bonus" id="speed-bonus" aria-hidden="true">⚡ Bônus de Velocidade</div>
+    <div class="error-burst" id="error-burst" aria-hidden="true">Errou!</div>
     <div class="confetti-layer" id="confetti-layer" aria-hidden="true"></div>
-    <script src="app.js?v=20260529-autonext" defer></script>
+    <script src="app.js?v=20260529-game-dynamics" defer></script>
   </body>
 </html>

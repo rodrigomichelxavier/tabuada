@@ -1,8 +1,11 @@
 const TABLES = Array.from({ length: 9 }, (_, index) => index + 2);
 const MAX_MULTIPLIER = 10;
-const COINS_PER_HIT = 10;
-const TABLE_BONUS = 100;
-const MINUTES_PER_TEN_COINS = 5;
+const COINS_PER_HIT = 1;
+const SPEED_BONUS_COINS = 1;
+const SPEED_BONUS_LIMIT_MS = 5000;
+const TABLE_BONUS = 10;
+const MINUTES_PER_REWARD_BLOCK = 5;
+const COINS_PER_REWARD_BLOCK = 20;
 
 const state = {
   selectedTable: 2,
@@ -12,9 +15,12 @@ const state = {
   coins: 0,
   hitsInCurrentTable: new Set(),
   answeredCurrentQuestion: false,
+  questionStartedAt: Date.now(),
+  timerInterval: null,
 };
 
 const screens = document.querySelectorAll("[data-screen]");
+const appShell = document.querySelector("#app");
 const tableOptions = document.querySelector("#table-options");
 const selectedTableLabel = document.querySelector("#selected-table-label");
 const memoryTitle = document.querySelector("#memory-title");
@@ -22,6 +28,7 @@ const memoryList = document.querySelector("#memory-list");
 const coinsElement = document.querySelector("#coins");
 const streakElement = document.querySelector("#streak");
 const minutesPreview = document.querySelector("#minutes-preview");
+const timerElement = document.querySelector("#timer");
 const tableIndicator = document.querySelector("#table-indicator");
 const questionElement = document.querySelector("#question");
 const answerForm = document.querySelector("#answer-form");
@@ -31,11 +38,17 @@ const progressBar = document.querySelector("#progress-bar");
 const finalCoins = document.querySelector("#final-coins");
 const finalMinutes = document.querySelector("#final-minutes");
 const confettiLayer = document.querySelector("#confetti-layer");
+const errorBurst = document.querySelector("#error-burst");
+const speedBonus = document.querySelector("#speed-bonus");
 
 function showScreen(screenName) {
   screens.forEach((screen) => {
     screen.classList.toggle("active", screen.dataset.screen === screenName);
   });
+
+  if (screenName !== "play") {
+    stopQuestionTimer();
+  }
 
   if (screenName === "play") {
     setTimeout(() => answerInput.focus(), 120);
@@ -87,7 +100,7 @@ function resetTableProgress(table) {
 
 function startRound(table = state.selectedTable) {
   resetTableProgress(table);
-  setFeedback("Boa sorte, pequeno mestre!", "neutral");
+  setFeedback("Valendo! Responda rápido para ganhar bônus de velocidade.", "neutral");
   renderQuestion();
   showScreen("play");
 }
@@ -102,6 +115,7 @@ function renderQuestion(previousMultiplier = null) {
   questionElement.textContent = `${state.currentTable} × ${state.currentMultiplier}`;
   answerInput.value = "";
   updateScoreboard();
+  startQuestionTimer();
 }
 
 function pickUnansweredMultiplier(previousMultiplier = null) {
@@ -121,32 +135,45 @@ function checkAnswer(event) {
   event.preventDefault();
 
   const answeredMultiplier = state.currentMultiplier;
+  const answeredTable = state.currentTable;
+  const elapsedMs = Date.now() - state.questionStartedAt;
   const givenAnswer = Number(answerInput.value);
-  const rightAnswer = state.currentTable * answeredMultiplier;
+  const rightAnswer = answeredTable * answeredMultiplier;
 
   if (givenAnswer === rightAnswer) {
-    rewardCorrectAnswer();
+    rewardCorrectAnswer(elapsedMs);
     return;
   }
 
-  setFeedback(`Quase! ${state.currentTable} × ${answeredMultiplier} = ${rightAnswer}. Tente a próxima!`, "error");
+  setFeedback(`Errou! ${answeredTable} × ${answeredMultiplier} = ${rightAnswer}. Bora para a próxima!`, "error");
+  showErrorEvent();
   showNextQuestion(answeredMultiplier);
 }
 
-function rewardCorrectAnswer() {
+function rewardCorrectAnswer(elapsedMs) {
+  const completedTable = state.currentTable;
+  let earnedCoins = COINS_PER_HIT;
+
   state.coins += COINS_PER_HIT;
   state.hitsInCurrentTable.add(state.currentMultiplier);
   state.answeredCurrentQuestion = true;
+
+  if (elapsedMs < SPEED_BONUS_LIMIT_MS) {
+    state.coins += SPEED_BONUS_COINS;
+    earnedCoins += SPEED_BONUS_COINS;
+    showSpeedBonus();
+  }
 
   const tableCompletedNow = state.hitsInCurrentTable.size === MAX_MULTIPLIER;
 
   if (tableCompletedNow) {
     state.coins += TABLE_BONUS;
-    setFeedback(`Perfeito! Tabuada gabaritada: +${TABLE_BONUS} moedas bônus!`, "success");
-    burstConfetti(42);
+    earnedCoins += TABLE_BONUS;
+    setFeedback(`Você completou a tabuada do ${completedTable}! +${TABLE_BONUS} moedas de gabarito!`, "success");
+    burstConfetti(48);
   } else {
-    setFeedback(`Mandou bem! +${COINS_PER_HIT} moedas na mochila!`, "success");
-    burstConfetti(18);
+    setFeedback(`Acertou! +${earnedCoins} ${earnedCoins === 1 ? "moeda" : "moedas"}.`, "success");
+    burstConfetti(16);
   }
 
   showNextQuestion(state.currentMultiplier);
@@ -164,27 +191,31 @@ function showNextQuestion(previousMultiplier) {
   renderQuestion(previousMultiplier);
 }
 
-function continuePlaying() {
-  showNextQuestion(state.currentMultiplier);
-  setFeedback("Nova conta na tela. Você consegue!", "neutral");
+function chooseAnotherTable() {
+  stopQuestionTimer();
+  state.isRandomMode = false;
+  showScreen("choose-table");
+  setFeedback("Escolha outra tabuada para continuar acumulando moedas!", "neutral");
 }
 
 function updateScoreboard() {
   coinsElement.textContent = state.coins;
   streakElement.textContent = `${state.hitsInCurrentTable.size}/${MAX_MULTIPLIER}`;
-  minutesPreview.textContent = `${coinsToMinutes(state.coins)} min`;
+  minutesPreview.textContent = formatMinutesAsTime(coinsToMinutes(state.coins));
   progressBar.style.width = `${(state.hitsInCurrentTable.size / MAX_MULTIPLIER) * 100}%`;
 }
 
 function finishGame() {
+  stopQuestionTimer();
   const minutes = coinsToMinutes(state.coins);
   finalCoins.textContent = state.coins;
-  finalMinutes.textContent = `${minutes} ${minutes === 1 ? "minuto" : "minutos"}`;
+  finalMinutes.textContent = formatMinutesAsTime(minutes);
   burstConfetti(64);
   showScreen("result");
 }
 
 function resetGame() {
+  stopQuestionTimer();
   state.selectedTable = 2;
   state.isRandomMode = false;
   state.currentTable = 2;
@@ -205,6 +236,44 @@ function setFeedback(message, type) {
   }
 }
 
+function startQuestionTimer() {
+  stopQuestionTimer();
+  state.questionStartedAt = Date.now();
+  updateTimer();
+  state.timerInterval = setInterval(updateTimer, 1000);
+}
+
+function stopQuestionTimer() {
+  if (state.timerInterval) {
+    clearInterval(state.timerInterval);
+    state.timerInterval = null;
+  }
+}
+
+function updateTimer() {
+  const seconds = Math.floor((Date.now() - state.questionStartedAt) / 1000);
+  timerElement.textContent = `${seconds}s`;
+}
+
+function showErrorEvent() {
+  errorBurst.classList.remove("show");
+  appShell.classList.remove("screen-shake");
+  void errorBurst.offsetWidth;
+  errorBurst.classList.add("show");
+  appShell.classList.add("screen-shake");
+  setTimeout(() => {
+    errorBurst.classList.remove("show");
+    appShell.classList.remove("screen-shake");
+  }, 900);
+}
+
+function showSpeedBonus() {
+  speedBonus.classList.remove("show");
+  void speedBonus.offsetWidth;
+  speedBonus.classList.add("show");
+  setTimeout(() => speedBonus.classList.remove("show"), 1100);
+}
+
 function randomTable() {
   return TABLES[Math.floor(Math.random() * TABLES.length)];
 }
@@ -214,11 +283,17 @@ function randomMultiplier() {
 }
 
 function coinsToMinutes(coins) {
-  return Math.floor(coins / 10) * MINUTES_PER_TEN_COINS;
+  return Math.floor(coins / COINS_PER_REWARD_BLOCK) * MINUTES_PER_REWARD_BLOCK;
+}
+
+function formatMinutesAsTime(totalMinutes) {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
 function burstConfetti(amount) {
-  const colors = ["#facc15", "#22c55e", "#38bdf8", "#fb7185", "#a78bfa", "#f97316"];
+  const colors = ["#9B5DE5", "#F15BB5", "#FEE440", "#00BBF9", "#00F5D4"];
 
   for (let index = 0; index < amount; index += 1) {
     const piece = document.createElement("span");
@@ -263,7 +338,7 @@ function bindEvents() {
       "back-tables": () => showScreen("choose-table"),
       "back-mode": () => showScreen("choose-mode"),
       "ready-play": () => startRound(state.selectedTable),
-      continue: continuePlaying,
+      "choose-table": chooseAnotherTable,
       finish: finishGame,
       "play-again": resetGame,
     };

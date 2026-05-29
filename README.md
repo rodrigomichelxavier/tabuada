@@ -8,13 +8,15 @@ Aplicação web gamificada, mobile first, para crianças de 7 a 10 anos praticar
 2. Escolha uma tabuada de 2 a 10 ou use a opção **Sortear tabuada**.
 3. Ao escolher uma tabuada específica, selecione **Jogar** ou **Memorizar**.
 4. Responda às contas para ganhar moedas:
-   - Cada acerto vale **10 moedas**.
-   - Cada tabuada completa gabaritada vale **+100 moedas bônus**.
-5. Toque em **Finalizar e Contar Moedas** para converter moedas em tempo de celular.
+   - Cada acerto vale **1 moeda**.
+   - Respostas certas em menos de **5 segundos** ganham **+1 moeda** de bônus de velocidade.
+   - Cada tabuada completa gabaritada vale **+10 moedas bônus**.
+5. Use **Escolher outra Tabuada** para trocar de missão mantendo as moedas acumuladas.
+6. Toque em **Finalizar e Contar Moedas** para converter moedas em tempo de celular.
 
 ## Conversão de recompensa
 
-Cada **10 moedas** conquistadas equivalem a **5 minutos** de tempo no celular, para que os pais possam liberar o uso conforme o desempenho da criança.
+Cada **20 moedas** conquistadas equivalem a **5 minutos** de tempo no celular. A tela final mostra a recompensa em formato **HH:MM**, para que os pais possam liberar o uso conforme o desempenho da criança.
 
 ## Rodar localmente
 
