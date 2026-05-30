@@ -51,7 +51,7 @@ function showScreen(screenName) {
   }
 
   if (screenName === "play") {
-    setTimeout(() => answerInput.focus(), 120);
+    focusAnswerInput(160);
   }
 }
 
@@ -116,6 +116,7 @@ function renderQuestion(previousMultiplier = null) {
   answerInput.value = "";
   updateScoreboard();
   startQuestionTimer();
+  focusAnswerInput();
 }
 
 function pickUnansweredMultiplier(previousMultiplier = null) {
@@ -236,6 +237,25 @@ function setFeedback(message, type) {
   }
 }
 
+function focusAnswerInput(delay = 0) {
+  const focus = () => {
+    if (!document.querySelector('[data-screen="play"]').classList.contains("active")) {
+      return;
+    }
+
+    answerInput.focus({ preventScroll: true });
+    answerInput.select();
+    document.body.classList.add("keyboard-mode");
+    document.querySelector(".game-stage").scrollIntoView({ block: "center", behavior: "smooth" });
+  };
+
+  if (delay > 0) {
+    setTimeout(focus, delay);
+  } else {
+    focus();
+  }
+}
+
 function startQuestionTimer() {
   stopQuestionTimer();
   state.questionStartedAt = Date.now();
@@ -347,6 +367,8 @@ function bindEvents() {
   });
 
   answerForm.addEventListener("submit", checkAnswer);
+  answerInput.addEventListener("focus", () => document.body.classList.add("keyboard-mode"));
+  answerInput.addEventListener("blur", () => document.body.classList.remove("keyboard-mode"));
 }
 
 renderTableOptions();
