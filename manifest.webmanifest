@@ -1,0 +1,21 @@
+{
+  "name": "Tabuada Quest",
+  "short_name": "Tabuada",
+  "description": "Jogo mobile-first para praticar tabuada e trocar moedas por tempo de celular.",
+  "lang": "pt-BR",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#9B5DE5",
+  "theme_color": "#9B5DE5",
+  "categories": ["education", "games", "kids"],
+  "icons": [
+    {
+      "src": "assets/calculator-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

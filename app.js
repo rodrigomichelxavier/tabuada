@@ -246,7 +246,10 @@ function focusAnswerInput(delay = 0) {
     answerInput.focus({ preventScroll: true });
     answerInput.select();
     document.body.classList.add("keyboard-mode");
-    document.querySelector(".game-stage").scrollIntoView({ block: "center", behavior: "smooth" });
+    requestAnimationFrame(() => {
+      appShell.scrollIntoView({ block: "start", behavior: "auto" });
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    });
   };
 
   if (delay > 0) {
@@ -374,3 +377,16 @@ function bindEvents() {
 renderTableOptions();
 bindEvents();
 updateScoreboard();
+
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) {
+    return;
+  }
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js");
+  });
+}
+
+registerServiceWorker();

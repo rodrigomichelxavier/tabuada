@@ -867,12 +867,8 @@ input:focus {
     font-size: 0.82rem;
   }
 
-  body.keyboard-mode .play-screen {
-    padding-bottom: 10px;
-  }
-
   body.keyboard-mode .bottom-actions {
-    display: none;
+    display: grid;
   }
 
   body.keyboard-mode .game-stage {

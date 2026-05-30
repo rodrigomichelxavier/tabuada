@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Tabuada Quest</title>
+  <desc id="desc">Ícone de calculadora colorida</desc>
+  <defs>
+    <linearGradient id="bg" x1="70" y1="35" x2="442" y2="477" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9B5DE5"/>
+      <stop offset="0.48" stop-color="#F15BB5"/>
+      <stop offset="1" stop-color="#00BBF9"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="151" y1="88" x2="361" y2="424" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.88"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.18"/>
+    </linearGradient>
+    <filter id="shadow" x="50" y="42" width="412" height="438" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#211134" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#bg)"/>
+  <circle cx="118" cy="111" r="54" fill="#FEE440" opacity="0.85"/>
+  <circle cx="408" cy="410" r="72" fill="#00F5D4" opacity="0.65"/>
+  <g filter="url(#shadow)">
+    <rect x="126" y="74" width="260" height="364" rx="48" fill="#FFFFFF"/>
+    <rect x="154" y="105" width="204" height="82" rx="26" fill="#211134"/>
+    <rect x="174" y="126" width="110" height="16" rx="8" fill="#00F5D4"/>
+    <rect x="174" y="153" width="70" height="12" rx="6" fill="#FEE440"/>
+    <circle cx="320" cy="146" r="18" fill="#F15BB5"/>
+    <g fill="#9B5DE5">
+      <rect x="154" y="218" width="48" height="48" rx="16"/>
+      <rect x="232" y="218" width="48" height="48" rx="16"/>
+      <rect x="310" y="218" width="48" height="48" rx="16"/>
+    </g>
+    <g fill="#00BBF9">
+      <rect x="154" y="292" width="48" height="48" rx="16"/>
+      <rect x="232" y="292" width="48" height="48" rx="16"/>
+    </g>
+    <rect x="310" y="292" width="48" height="122" rx="18" fill="#F15BB5"/>
+    <rect x="154" y="366" width="126" height="48" rx="18" fill="#00F5D4"/>
+    <path d="M181 242h-10v-10h10v-10h10v10h10v10h-10v10h-10v-10Zm67-2h48v10h-48v-10Zm78-8h16v10h-16v-10Zm0 22h16v10h-16v-10Zm-145 62h-10v-10h30v10h-10v10h-10v-10Zm70-2 34-22 6 9-34 22-6-9Zm0 22 34-22 6 9-34 22-6-9Z" fill="#FFFFFF" opacity="0.95"/>
+    <path d="M154 386h126v28H172c-10 0-18-8-18-18v-10Z" fill="#FFFFFF" opacity="0.22"/>
+    <path d="M126 122c0-27 21-48 48-48h164c27 0 48 21 48 48v42c-37 132-123 211-260 238V122Z" fill="url(#shine)" opacity="0.42"/>
+  </g>
+</svg>

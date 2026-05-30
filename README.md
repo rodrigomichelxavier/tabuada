@@ -18,6 +18,16 @@ Aplicação web gamificada, mobile first, para crianças de 7 a 10 anos praticar
 
 Cada **20 moedas** conquistadas equivalem a **5 minutos** de tempo no celular. A tela final mostra a recompensa em formato **HH:MM**, para que os pais possam liberar o uso conforme o desempenho da criança.
 
+
+## Instalar no celular
+
+A aplicação também foi preparada como **PWA**. Depois de publicada no GitHub Pages, ela pode ser adicionada à tela inicial do celular com ícone de calculadora e abertura em modo aplicativo.
+
+- **Android/Chrome:** abra a URL publicada, toque no menu `⋮` e escolha **Adicionar à tela inicial** ou **Instalar app**.
+- **iPhone/Safari:** abra a URL publicada, toque em **Compartilhar** e escolha **Adicionar à Tela de Início**.
+
+O app inclui `manifest.webmanifest`, ícone SVG de calculadora e `service-worker.js` para permitir instalação e cache básico dos arquivos sem arquivos binários no PR.
+
 ## Rodar localmente
 
 ```bash
