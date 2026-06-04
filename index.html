@@ -25,13 +25,55 @@
           <div class="mascot" aria-hidden="true">🚀</div>
           <p class="eyebrow">Missão matemática</p>
           <h1 id="home-title">Tabuada Quest</h1>
-          <p class="hero-copy">Resolva missões de tabuada, ganhe moedas e transforme matemática em tempo de celular combinado com seus pais.</p>
+          <p class="hero-copy">Resolva missões de tabuada, ganhe moedas e troque por prêmios combinados com seus pais.</p>
           <div class="hero-badges" aria-label="Benefícios do jogo">
             <span><i class="coin-icon" aria-hidden="true"></i>1 moeda por acerto</span>
             <span>⚡ Bônus de velocidade</span>
-            <span>📱 Troque moedas por tempo</span>
+            <span>🎁 Troque moedas por prêmio</span>
           </div>
-          <button class="primary-button" data-action="start">Iniciar aventura</button>
+          <button class="primary-button" data-action="start">Olá papais, qual será o prêmio?</button>
+        </div>
+      </section>
+
+      <section class="screen prize-screen" data-screen="prize-setup" aria-labelledby="prize-title">
+        <div class="sky-orb orb-one"></div>
+        <div class="sky-orb orb-two"></div>
+        <div class="prize-card glass-card">
+          <button class="ghost-button small prize-back-btn" data-action="back-home" aria-label="Voltar para o início">←</button>
+          <div class="prize-emoji" aria-hidden="true">🎁</div>
+          <p class="eyebrow">Área dos pais</p>
+          <h2 id="prize-title">Qual será o prêmio?</h2>
+          <p class="hero-copy">Defina o prêmio e veja quantas contas o participante precisa acertar para conquistá-lo.</p>
+          <div class="prize-form">
+            <div class="field-group">
+              <label for="prize-name-input">Nome do prêmio</label>
+              <input id="prize-name-input" type="text" placeholder="Ex: 1 hora de celular" autocomplete="off" />
+            </div>
+            <div class="field-group">
+              <label for="prize-coins-input">Valor em moedas 🪙</label>
+              <input id="prize-coins-input" type="number" inputmode="numeric" placeholder="Ex: 200" min="1" autocomplete="off" />
+            </div>
+          </div>
+          <div class="prize-calc" id="prize-calc" hidden>
+            <p class="calc-header">Para ganhar <strong id="prize-display-name">o prêmio</strong> o participante precisaria:</p>
+            <div class="calc-grid">
+              <div class="calc-item">
+                <span class="calc-number" id="calc-normal">0</span>
+                <span class="calc-label">acertos normais</span>
+              </div>
+              <div class="calc-sep">ou</div>
+              <div class="calc-item">
+                <span class="calc-number" id="calc-speed">0</span>
+                <span class="calc-label">acertos com ⚡ bônus</span>
+              </div>
+              <div class="calc-sep">ou</div>
+              <div class="calc-item">
+                <span class="calc-number" id="calc-tables">0</span>
+                <span class="calc-label">tabuadas gabaritadas</span>
+              </div>
+            </div>
+          </div>
+          <button class="primary-button adventure-btn" id="start-adventure-btn" data-action="start-adventure" hidden>Iniciar Aventura 🚀</button>
         </div>
       </section>
 
@@ -102,8 +144,8 @@
             <div><small>Tempo</small><strong id="timer">0s</strong></div>
           </article>
           <article class="score-card">
-            <span>📱</span>
-            <div><small>Celular</small><strong id="minutes-preview">00:00</strong></div>
+            <span>🎁</span>
+            <div><small>Prêmio</small><strong id="minutes-preview">0%</strong></div>
           </article>
         </header>
 
@@ -137,11 +179,19 @@
         <div class="result-card glass-card">
           <div class="trophy" aria-hidden="true">🏆</div>
           <p class="eyebrow">Missão concluída</p>
-          <h2 id="result-title">Você juntou <span id="final-coins">0</span> moedas!</h2>
-          <p class="result-text">Cada 20 moedas valem 5 minutos de celular. O tempo aparece em HH:MM.</p>
-          <div class="phone-time">
-            <span>📱</span>
-            <strong id="final-minutes">00:00</strong>
+          <h2 id="result-title">Você juntou <span id="final-coins">0</span> 🪙</h2>
+          <div class="prize-result" id="prize-result" hidden>
+            <p class="prize-result-name" id="result-prize-name"></p>
+            <div class="progress-track prize-progress-track">
+              <span id="result-progress-bar"></span>
+            </div>
+            <div class="prize-result-counts">
+              <span id="result-coins-earned">0</span>
+              <span> / </span>
+              <span id="result-coins-needed">0</span>
+              <span> 🪙</span>
+            </div>
+            <p id="result-prize-msg" class="result-text"></p>
           </div>
           <div class="result-actions">
             <button class="primary-button" data-action="play-again">Jogar novamente</button>
@@ -154,6 +204,7 @@
     <div class="speed-bonus" id="speed-bonus" aria-hidden="true">⚡ Bônus de Velocidade</div>
     <div class="error-burst" id="error-burst" aria-hidden="true">Errou!</div>
     <div class="confetti-layer" id="confetti-layer" aria-hidden="true"></div>
+    <button class="music-toggle" id="music-toggle" data-action="toggle-music" aria-label="Silenciar música">🎵</button>
     <script src="app.js?v=20260530-pwa-svg" defer></script>
   </body>
 </html>

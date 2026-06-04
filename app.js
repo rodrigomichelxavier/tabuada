@@ -4,8 +4,6 @@ const COINS_PER_HIT = 1;
 const SPEED_BONUS_COINS = 1;
 const SPEED_BONUS_LIMIT_MS = 5000;
 const TABLE_BONUS = 10;
-const MINUTES_PER_REWARD_BLOCK = 5;
-const COINS_PER_REWARD_BLOCK = 20;
 
 const state = {
   selectedTable: 2,
@@ -18,6 +16,83 @@ const state = {
   questionStartedAt: Date.now(),
   timerInterval: null,
 };
+
+const prize = { name: '', coins: 0 };
+
+// Web Audio chiptune background music
+const music = (() => {
+  let ctx = null;
+  let masterGain = null;
+  let muted = false;
+  let loopId = null;
+  let running = false;
+
+  const BPM = 145;
+  const BEAT = 60 / BPM;
+
+  const MELODY = [
+    [523, 0.5], [659, 0.5], [784, 0.5], [880, 0.5],
+    [1047, 1],  [880, 0.5], [784, 0.5],
+    [659, 0.5], [523, 0.5], [0, 0.5],   [587, 0.5],
+    [784, 0.5], [880, 0.5], [784, 1],   [0, 0.5],
+    [880, 0.5], [1047, 0.5],[880, 0.5], [784, 0.5],
+    [659, 1],   [523, 0.5], [0, 0.5],
+    [523, 0.5], [659, 0.5], [784, 0.5], [880, 0.5],
+    [1047, 1.5],[784, 0.5],
+  ];
+
+  const LOOP_DURATION = MELODY.reduce((s, [, b]) => s + b * BEAT, 0);
+
+  function init() {
+    if (!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = ctx.createGain();
+      masterGain.gain.value = muted ? 0 : 0.1;
+      masterGain.connect(ctx.destination);
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+  }
+
+  function playNote(freq, startTime, duration) {
+    if (!freq || !ctx) return;
+    const osc = ctx.createOscillator();
+    const env = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.value = freq;
+    env.gain.setValueAtTime(0, startTime);
+    env.gain.linearRampToValueAtTime(0.22, startTime + 0.01);
+    env.gain.exponentialRampToValueAtTime(0.001, startTime + duration * 0.82);
+    osc.connect(env);
+    env.connect(masterGain);
+    osc.start(startTime);
+    osc.stop(startTime + duration);
+  }
+
+  function schedule(startTime) {
+    let t = startTime;
+    MELODY.forEach(([freq, beats]) => {
+      playNote(freq, t, beats * BEAT * 0.88);
+      t += beats * BEAT;
+    });
+    loopId = setTimeout(() => schedule(startTime + LOOP_DURATION), (LOOP_DURATION - 0.15) * 1000);
+  }
+
+  return {
+    start() {
+      init();
+      if (running) return;
+      running = true;
+      clearTimeout(loopId);
+      schedule(ctx.currentTime + 0.05);
+    },
+    toggleMute() {
+      muted = !muted;
+      if (masterGain) masterGain.gain.value = muted ? 0 : 0.1;
+      return muted;
+    },
+    isMuted: () => muted,
+  };
+})();
 
 const screens = document.querySelectorAll("[data-screen]");
 const appShell = document.querySelector("#app");
@@ -36,10 +111,24 @@ const answerInput = document.querySelector("#answer-input");
 const feedback = document.querySelector("#feedback");
 const progressBar = document.querySelector("#progress-bar");
 const finalCoins = document.querySelector("#final-coins");
-const finalMinutes = document.querySelector("#final-minutes");
 const confettiLayer = document.querySelector("#confetti-layer");
 const errorBurst = document.querySelector("#error-burst");
 const speedBonus = document.querySelector("#speed-bonus");
+const prizeNameInput = document.querySelector("#prize-name-input");
+const prizeCoinsInput = document.querySelector("#prize-coins-input");
+const prizeCalc = document.querySelector("#prize-calc");
+const prizeDisplayName = document.querySelector("#prize-display-name");
+const calcNormal = document.querySelector("#calc-normal");
+const calcSpeed = document.querySelector("#calc-speed");
+const calcTables = document.querySelector("#calc-tables");
+const startAdventureBtn = document.querySelector("#start-adventure-btn");
+const prizeResultEl = document.querySelector("#prize-result");
+const resultPrizeName = document.querySelector("#result-prize-name");
+const resultProgressBar = document.querySelector("#result-progress-bar");
+const resultCoinsEarned = document.querySelector("#result-coins-earned");
+const resultCoinsNeeded = document.querySelector("#result-coins-needed");
+const resultPrizeMsg = document.querySelector("#result-prize-msg");
+const musicToggleBtn = document.querySelector("#music-toggle");
 
 function showScreen(screenName) {
   screens.forEach((screen) => {
@@ -199,20 +288,79 @@ function chooseAnotherTable() {
   setFeedback("Escolha outra tabuada para continuar acumulando moedas!", "neutral");
 }
 
+function updatePrizeCalc() {
+  const name = prizeNameInput.value.trim();
+  const coins = parseInt(prizeCoinsInput.value, 10);
+
+  if (!name || !coins || coins < 1) {
+    prizeCalc.hidden = true;
+    startAdventureBtn.hidden = true;
+    return;
+  }
+
+  prizeDisplayName.textContent = `"${name}"`;
+  calcNormal.textContent = coins;
+  calcSpeed.textContent = Math.ceil(coins / 2);
+  calcTables.textContent = Math.ceil(coins / 20);
+
+  prizeCalc.hidden = false;
+  startAdventureBtn.hidden = false;
+}
+
+function startAdventure() {
+  const name = prizeNameInput.value.trim();
+  const coins = parseInt(prizeCoinsInput.value, 10);
+  if (!name || !coins || coins < 1) return;
+
+  prize.name = name;
+  prize.coins = coins;
+  music.start();
+  showScreen("choose-table");
+}
+
 function updateScoreboard() {
   coinsElement.textContent = state.coins;
   streakElement.textContent = `${state.hitsInCurrentTable.size}/${MAX_MULTIPLIER}`;
-  minutesPreview.textContent = formatMinutesAsTime(coinsToMinutes(state.coins));
+  const pct = prize.coins > 0 ? Math.min(100, Math.round((state.coins / prize.coins) * 100)) : 0;
+  minutesPreview.textContent = `${pct}%`;
   progressBar.style.width = `${(state.hitsInCurrentTable.size / MAX_MULTIPLIER) * 100}%`;
 }
 
 function finishGame() {
   stopQuestionTimer();
-  const minutes = coinsToMinutes(state.coins);
-  finalCoins.textContent = state.coins;
-  finalMinutes.textContent = formatMinutesAsTime(minutes);
+  const earned = state.coins;
+  finalCoins.textContent = earned;
+
+  if (prize.name) {
+    const needed = prize.coins;
+    const pct = Math.min(100, (earned / needed) * 100);
+    resultPrizeName.textContent = `🎁 ${prize.name} (${needed} 🪙)`;
+    resultProgressBar.style.width = `${pct}%`;
+    resultCoinsEarned.textContent = earned;
+    resultCoinsNeeded.textContent = needed;
+
+    if (earned >= needed) {
+      resultPrizeMsg.textContent = '🎉 Missão cumprida! Você conquistou o prêmio!';
+    } else {
+      const diff = needed - earned;
+      resultPrizeMsg.textContent = `Faltam ${diff} moedas para conquistar o prêmio!`;
+    }
+    prizeResultEl.hidden = false;
+  } else {
+    prizeResultEl.hidden = true;
+  }
+
   burstConfetti(64);
   showScreen("result");
+}
+
+function playAgain() {
+  stopQuestionTimer();
+  state.coins = 0;
+  state.hitsInCurrentTable = new Set();
+  state.answeredCurrentQuestion = false;
+  updateScoreboard();
+  showScreen("choose-table");
 }
 
 function resetGame() {
@@ -224,6 +372,12 @@ function resetGame() {
   state.coins = 0;
   state.hitsInCurrentTable = new Set();
   state.answeredCurrentQuestion = false;
+  prize.name = '';
+  prize.coins = 0;
+  prizeNameInput.value = '';
+  prizeCoinsInput.value = '';
+  prizeCalc.hidden = true;
+  startAdventureBtn.hidden = true;
   updateScoreboard();
   showScreen("home");
 }
@@ -305,16 +459,6 @@ function randomMultiplier() {
   return Math.floor(Math.random() * MAX_MULTIPLIER) + 1;
 }
 
-function coinsToMinutes(coins) {
-  return Math.floor(coins / COINS_PER_REWARD_BLOCK) * MINUTES_PER_REWARD_BLOCK;
-}
-
-function formatMinutesAsTime(totalMinutes) {
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-}
-
 function burstConfetti(amount) {
   const colors = ["#9B5DE5", "#F15BB5", "#FEE440", "#00BBF9", "#00F5D4"];
 
@@ -356,14 +500,20 @@ function bindEvents() {
     }
 
     const actions = {
-      start: () => showScreen("choose-table"),
+      start: () => showScreen("prize-setup"),
+      "start-adventure": startAdventure,
       "back-home": resetGame,
       "back-tables": () => showScreen("choose-table"),
       "back-mode": () => showScreen("choose-mode"),
       "ready-play": () => startRound(state.selectedTable),
       "choose-table": chooseAnotherTable,
       finish: finishGame,
-      "play-again": resetGame,
+      "play-again": playAgain,
+      "toggle-music": () => {
+        const isMuted = music.toggleMute();
+        musicToggleBtn.textContent = isMuted ? '🔇' : '🎵';
+        musicToggleBtn.setAttribute("aria-label", isMuted ? "Ativar música" : "Silenciar música");
+      },
     };
 
     actions[actionButton.dataset.action]?.();
@@ -372,12 +522,13 @@ function bindEvents() {
   answerForm.addEventListener("submit", checkAnswer);
   answerInput.addEventListener("focus", () => document.body.classList.add("keyboard-mode"));
   answerInput.addEventListener("blur", () => document.body.classList.remove("keyboard-mode"));
+  prizeNameInput.addEventListener("input", updatePrizeCalc);
+  prizeCoinsInput.addEventListener("input", updatePrizeCalc);
 }
 
 renderTableOptions();
 bindEvents();
 updateScoreboard();
-
 
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) {
