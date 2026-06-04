@@ -19,78 +19,20 @@ const state = {
 
 const prize = { name: '', coins: 0 };
 
-// Web Audio chiptune background music
 const music = (() => {
-  let ctx = null;
-  let masterGain = null;
-  let muted = false;
-  let loopId = null;
-  let running = false;
-
-  const BPM = 145;
-  const BEAT = 60 / BPM;
-
-  const MELODY = [
-    [523, 0.5], [659, 0.5], [784, 0.5], [880, 0.5],
-    [1047, 1],  [880, 0.5], [784, 0.5],
-    [659, 0.5], [523, 0.5], [0, 0.5],   [587, 0.5],
-    [784, 0.5], [880, 0.5], [784, 1],   [0, 0.5],
-    [880, 0.5], [1047, 0.5],[880, 0.5], [784, 0.5],
-    [659, 1],   [523, 0.5], [0, 0.5],
-    [523, 0.5], [659, 0.5], [784, 0.5], [880, 0.5],
-    [1047, 1.5],[784, 0.5],
-  ];
-
-  const LOOP_DURATION = MELODY.reduce((s, [, b]) => s + b * BEAT, 0);
-
-  function init() {
-    if (!ctx) {
-      ctx = new (window.AudioContext || window.webkitAudioContext)();
-      masterGain = ctx.createGain();
-      masterGain.gain.value = muted ? 0 : 0.1;
-      masterGain.connect(ctx.destination);
-    }
-    if (ctx.state === 'suspended') ctx.resume();
-  }
-
-  function playNote(freq, startTime, duration) {
-    if (!freq || !ctx) return;
-    const osc = ctx.createOscillator();
-    const env = ctx.createGain();
-    osc.type = 'square';
-    osc.frequency.value = freq;
-    env.gain.setValueAtTime(0, startTime);
-    env.gain.linearRampToValueAtTime(0.22, startTime + 0.01);
-    env.gain.exponentialRampToValueAtTime(0.001, startTime + duration * 0.82);
-    osc.connect(env);
-    env.connect(masterGain);
-    osc.start(startTime);
-    osc.stop(startTime + duration);
-  }
-
-  function schedule(startTime) {
-    let t = startTime;
-    MELODY.forEach(([freq, beats]) => {
-      playNote(freq, t, beats * BEAT * 0.88);
-      t += beats * BEAT;
-    });
-    loopId = setTimeout(() => schedule(startTime + LOOP_DURATION), (LOOP_DURATION - 0.15) * 1000);
-  }
+  const audio = new Audio('assets/tabuadagame.mp3');
+  audio.loop = true;
+  audio.volume = 0.5;
 
   return {
     start() {
-      init();
-      if (running) return;
-      running = true;
-      clearTimeout(loopId);
-      schedule(ctx.currentTime + 0.05);
+      audio.play().catch(() => {});
     },
     toggleMute() {
-      muted = !muted;
-      if (masterGain) masterGain.gain.value = muted ? 0 : 0.1;
-      return muted;
+      audio.muted = !audio.muted;
+      return audio.muted;
     },
-    isMuted: () => muted,
+    isMuted: () => audio.muted,
   };
 })();
 
