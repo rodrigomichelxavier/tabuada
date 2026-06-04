@@ -50,7 +50,7 @@
               <input id="prize-name-input" type="text" placeholder="Ex: 1 hora de celular" autocomplete="off" />
             </div>
             <div class="field-group">
-              <label for="prize-coins-input">Valor em moedas 🪙</label>
+              <label for="prize-coins-input">Valor em moedas <i class="coin-icon" aria-hidden="true"></i></label>
               <input id="prize-coins-input" type="number" inputmode="numeric" placeholder="Ex: 200" min="1" autocomplete="off" />
             </div>
           </div>
@@ -132,7 +132,7 @@
       <section class="screen play-screen" data-screen="play" aria-labelledby="play-title">
         <header class="scoreboard" aria-label="Painel de pontuação">
           <article class="score-card">
-            <span>🪙</span>
+            <i class="coin-icon" aria-hidden="true"></i>
             <div><small>Moedas</small><strong id="coins">0</strong></div>
           </article>
           <article class="score-card">
@@ -179,7 +179,7 @@
         <div class="result-card glass-card">
           <div class="trophy" aria-hidden="true">🏆</div>
           <p class="eyebrow">Missão concluída</p>
-          <h2 id="result-title">Você juntou <span id="final-coins">0</span> 🪙</h2>
+          <h2 id="result-title">Você juntou <span id="final-coins">0</span> <i class="coin-icon" aria-hidden="true"></i></h2>
           <div class="prize-result" id="prize-result" hidden>
             <p class="prize-result-name" id="result-prize-name"></p>
             <div class="progress-track prize-progress-track">
@@ -189,7 +189,7 @@
               <span id="result-coins-earned">0</span>
               <span> / </span>
               <span id="result-coins-needed">0</span>
-              <span> 🪙</span>
+              <i class="coin-icon" aria-hidden="true"></i>
             </div>
             <p id="result-prize-msg" class="result-text"></p>
           </div>

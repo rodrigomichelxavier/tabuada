@@ -334,7 +334,7 @@ function finishGame() {
   if (prize.name) {
     const needed = prize.coins;
     const pct = Math.min(100, (earned / needed) * 100);
-    resultPrizeName.textContent = `🎁 ${prize.name} (${needed} 🪙)`;
+    resultPrizeName.innerHTML = `🎁 ${prize.name} (${needed} <i class="coin-icon" aria-hidden="true"></i>)`;
     resultProgressBar.style.width = `${pct}%`;
     resultCoinsEarned.textContent = earned;
     resultCoinsNeeded.textContent = needed;
