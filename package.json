@@ -1,8 +1,8 @@
 {
   "name": "tabuada-game",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Aplicação gamificada mobile-first para crianças praticarem tabuada de 2 a 10.",
+  "description": "Jogo gamificado mobile-first para crianças praticarem todas as tabuadas de 2 a 10.",
   "scripts": {
     "start": "python3 -m http.server 4173 --bind 0.0.0.0",
     "check": "node --check app.js && node --check service-worker.js"

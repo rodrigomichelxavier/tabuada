@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#9B5DE5" />
+    <meta name="theme-color" content="#174bbb" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Tabuada Quest" />
@@ -11,200 +11,142 @@
     <title>Tabuada Quest</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;900&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="assets/calculator-icon.svg" />
-    <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="stylesheet" href="styles.css?v=20260530-pwa-svg" />
+    <link rel="manifest" href="manifest.webmanifest?v=20260803" />
+    <link rel="stylesheet" href="styles.css?v=20260803" />
   </head>
   <body>
     <main class="app-shell" id="app">
       <section class="screen hero-screen active" data-screen="home" aria-labelledby="home-title">
-        <div class="sky-orb orb-one"></div>
-        <div class="sky-orb orb-two"></div>
-        <div class="hero-card glass-card">
-          <div class="mascot" aria-hidden="true">🚀</div>
-          <p class="eyebrow">Missão matemática</p>
-          <h1 id="home-title">Tabuada Quest</h1>
-          <p class="hero-copy">Resolva missões de tabuada, ganhe moedas e troque por prêmios combinados com seus pais.</p>
-          <div class="hero-badges" aria-label="Benefícios do jogo">
-            <span><i class="coin-icon" aria-hidden="true"></i>1 moeda por acerto</span>
-            <span>⚡ Bônus de velocidade</span>
-            <span>🎁 Troque moedas por prêmio</span>
+        <div class="spark spark-one" aria-hidden="true">×</div>
+        <div class="spark spark-two" aria-hidden="true">+</div>
+        <div class="hero-card">
+          <div class="brand-mark" aria-hidden="true"><span>2</span><span>×</span><span>5</span></div>
+          <p class="eyebrow light">Aventura matemática</p>
+          <h1 id="home-title"><span>Tabuada</span><strong>Quest</strong></h1>
+          <p class="hero-copy">Complete desafios, domine todas as tabuadas e mostre que você é fera nos números!</p>
+          <div class="home-actions" aria-label="Escolha como praticar">
+            <button class="menu-button knowledge-button" data-action="start-practice">
+              <span class="button-icon">∞</span>
+              <span><strong>Praticar pelo conhecimento</strong><small>Treine livremente e complete a jornada</small></span>
+            </button>
+            <button class="menu-button prize-button" data-action="start-prize">
+              <span class="button-icon">🏆</span>
+              <span><strong>Disputar por um prêmio</strong><small>Combine uma recompensa com seus responsáveis</small></span>
+            </button>
           </div>
-          <button class="primary-button" data-action="start">Olá papais, qual será o prêmio?</button>
         </div>
       </section>
 
       <section class="screen prize-screen" data-screen="prize-setup" aria-labelledby="prize-title">
-        <div class="sky-orb orb-one"></div>
-        <div class="sky-orb orb-two"></div>
         <div class="prize-card glass-card">
           <button class="ghost-button small prize-back-btn" data-action="back-home" aria-label="Voltar para o início">←</button>
           <div class="prize-emoji" aria-hidden="true">🎁</div>
-          <p class="eyebrow">Área dos pais</p>
+          <p class="eyebrow">Área dos responsáveis</p>
           <h2 id="prize-title">Qual será o prêmio?</h2>
-          <p class="hero-copy">Defina o prêmio e veja quantas contas o participante precisa acertar para conquistá-lo.</p>
+          <p class="card-copy">Defina o prêmio e quantas moedas são necessárias para conquistá-lo.</p>
           <div class="prize-form">
             <div class="field-group">
               <label for="prize-name-input">Nome do prêmio</label>
-              <input id="prize-name-input" type="text" placeholder="Ex: 1 hora de celular" autocomplete="off" />
+              <input id="prize-name-input" type="text" placeholder="Ex.: 1 hora de celular" autocomplete="off" />
             </div>
             <div class="field-group">
               <label for="prize-coins-input">Valor em moedas <i class="coin-icon" aria-hidden="true"></i></label>
-              <input id="prize-coins-input" type="number" inputmode="numeric" placeholder="Ex: 200" min="1" autocomplete="off" />
+              <input id="prize-coins-input" type="number" inputmode="numeric" placeholder="Ex.: 200" min="1" autocomplete="off" />
             </div>
           </div>
           <div class="prize-calc" id="prize-calc" hidden>
-            <p class="calc-header">Para ganhar <strong id="prize-display-name">o prêmio</strong> o participante precisaria:</p>
+            <p class="calc-header">Para ganhar <strong id="prize-display-name">o prêmio</strong>, será preciso:</p>
             <div class="calc-grid">
-              <div class="calc-item">
-                <span class="calc-number" id="calc-normal">0</span>
-                <span class="calc-label">acertos normais</span>
-              </div>
+              <div class="calc-item"><span class="calc-number" id="calc-normal">0</span><span class="calc-label">acertos normais</span></div>
               <div class="calc-sep">ou</div>
-              <div class="calc-item">
-                <span class="calc-number" id="calc-speed">0</span>
-                <span class="calc-label">acertos com ⚡ bônus</span>
-              </div>
+              <div class="calc-item"><span class="calc-number" id="calc-speed">0</span><span class="calc-label">acertos rápidos</span></div>
               <div class="calc-sep">ou</div>
-              <div class="calc-item">
-                <span class="calc-number" id="calc-tables">0</span>
-                <span class="calc-label">tabuadas gabaritadas</span>
-              </div>
+              <div class="calc-item"><span class="calc-number" id="calc-tables">0</span><span class="calc-label">tabuadas completas</span></div>
             </div>
           </div>
-          <button class="primary-button adventure-btn" id="start-adventure-btn" data-action="start-adventure" hidden>Iniciar Aventura 🚀</button>
+          <button class="primary-button adventure-btn" id="start-adventure-btn" data-action="start-adventure" hidden>Começar disputa 🚀</button>
         </div>
       </section>
 
       <section class="screen" data-screen="choose-table" aria-labelledby="choose-title">
         <header class="top-header compact">
           <button class="ghost-button small" data-action="back-home" aria-label="Voltar para o início">←</button>
-          <div>
-            <p class="eyebrow">Primeira escolha</p>
-            <h2 id="choose-title">Qual tabuada vamos treinar?</h2>
-          </div>
+          <div><p class="eyebrow light">Escolha seu desafio</p><h2 id="choose-title">Por onde vamos começar?</h2></div>
         </header>
-        <div class="choice-grid" id="table-options" aria-label="Escolha uma tabuada"></div>
+        <div class="choice-intro"><strong>Escolha uma tabuada</strong><span>Ao terminar, você seguirá pelas demais até completar todas.</span></div>
+        <div class="choice-grid" id="table-options" aria-label="Escolha uma tabuada ou o modo sortido"></div>
       </section>
 
       <section class="screen" data-screen="choose-mode" aria-labelledby="mode-title">
         <header class="top-header compact">
           <button class="ghost-button small" data-action="back-tables" aria-label="Voltar para tabuadas">←</button>
-          <div>
-            <p class="eyebrow">Tabuada escolhida</p>
-            <h2 id="mode-title">Como você quer começar?</h2>
-          </div>
+          <div><p class="eyebrow light">Tabuada escolhida</p><h2 id="mode-title">Como você quer começar?</h2></div>
         </header>
-        <div class="selected-pill" id="selected-table-label">Tabuada do 2</div>
+        <div class="selected-pill" id="selected-table-label">Começando pela tabuada do 2</div>
         <div class="mode-cards">
-          <button class="mode-card" data-mode="play">
-            <span class="mode-icon">🎯</span>
-            <strong>Jogar</strong>
-            <small>Responder contas e ganhar moedas agora.</small>
-          </button>
-          <button class="mode-card" data-mode="memorize">
-            <span class="mode-icon">📚</span>
-            <strong>Memorizar</strong>
-            <small>Ver a tabuada preenchida antes do desafio.</small>
-          </button>
+          <button class="mode-card play-card" data-mode="play"><span class="mode-icon">🎯</span><strong>Jogar</strong><small>Começar o desafio agora.</small></button>
+          <button class="mode-card memory-mode-card" data-mode="memorize"><span class="mode-icon">📚</span><strong>Memorizar</strong><small>Revisar a primeira tabuada antes de jogar.</small></button>
         </div>
       </section>
 
       <section class="screen" data-screen="memorize" aria-labelledby="memorize-title">
         <header class="top-header compact">
           <button class="ghost-button small" data-action="back-mode" aria-label="Voltar para modo">←</button>
-          <div>
-            <p class="eyebrow">Hora de decorar</p>
-            <h2 id="memorize-title">Memorize a tabuada</h2>
-          </div>
+          <div><p class="eyebrow light">Hora de decorar</p><h2 id="memorize-title">Memorize a tabuada</h2></div>
         </header>
         <div class="memory-card glass-card">
-          <div class="memory-heading">
-            <span>🧠</span>
-            <strong id="memory-title">Tabuada do 2</strong>
-          </div>
+          <div class="memory-heading"><span>🧠</span><strong id="memory-title">Tabuada do 2</strong></div>
           <ol class="memory-list" id="memory-list"></ol>
-          <button class="primary-button" data-action="ready-play">Estou pronto pra Jogar</button>
+          <button class="primary-button" data-action="ready-play">Estou pronto para jogar</button>
         </div>
       </section>
 
       <section class="screen play-screen" data-screen="play" aria-labelledby="play-title">
         <header class="scoreboard" aria-label="Painel de pontuação">
-          <article class="score-card">
-            <i class="coin-icon" aria-hidden="true"></i>
-            <div><small>Moedas</small><strong id="coins">0</strong></div>
-          </article>
-          <article class="score-card">
-            <span>✅</span>
-            <div><small>Acertos</small><strong id="streak">0/10</strong></div>
-          </article>
-          <article class="score-card">
-            <span>⏱️</span>
-            <div><small>Tempo</small><strong id="timer">0s</strong></div>
-          </article>
-          <article class="score-card">
-            <span>🎁</span>
-            <div><small>Prêmio</small><strong id="minutes-preview">0%</strong></div>
-          </article>
+          <article class="score-card"><i class="coin-icon" aria-hidden="true"></i><div><small>Moedas</small><strong id="coins">0</strong></div></article>
+          <article class="score-card"><span>✅</span><div><small>Acertos</small><strong id="streak">0/10</strong></div></article>
+          <article class="score-card"><span>⏱️</span><div><small>Tempo</small><strong id="timer">0s</strong></div></article>
+          <article class="score-card"><span>🏁</span><div><small id="status-label">Jornada</small><strong id="journey-preview">0%</strong></div></article>
         </header>
-
         <div class="game-stage glass-card">
-          <div class="stage-topline">
-            <p class="eyebrow" id="table-indicator">Tabuada do 2</p>
-            <span class="level-chip">1 acerto = 1 moeda • Gabarito = +10</span>
-          </div>
+          <div class="stage-topline"><p class="eyebrow" id="table-indicator">Tabuada do 2</p><span class="level-chip">Acerto +1 · rapidez +1 · tabuada +10</span></div>
           <h2 id="play-title">Quanto é?</h2>
           <div class="question-bubble" id="question">2 × 1</div>
           <form class="answer-form" id="answer-form">
             <label for="answer-input">Digite sua resposta</label>
-            <div class="input-row">
-              <input id="answer-input" type="number" inputmode="numeric" autocomplete="off" placeholder="?" required />
-              <button class="primary-button" type="submit">Responder</button>
-            </div>
+            <div class="input-row"><input id="answer-input" type="number" inputmode="numeric" autocomplete="off" placeholder="?" required /><button class="primary-button" type="submit">Responder</button></div>
           </form>
           <div class="feedback" id="feedback" role="status" aria-live="polite">Boa sorte, pequeno mestre!</div>
-          <div class="progress-track" aria-label="Progresso da tabuada atual">
-            <span id="progress-bar"></span>
-          </div>
+          <div class="progress-track" id="game-progress" role="progressbar" aria-label="Progresso do desafio atual" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-bar"></span></div>
         </div>
-
-        <footer class="bottom-actions">
-          <button class="secondary-button" data-action="finish">Finalizar e Contar Moedas</button>
-          <button class="primary-button" data-action="choose-table">Escolher outra Tabuada</button>
-        </footer>
+        <footer class="bottom-actions"><button class="secondary-button" data-action="finish">Encerrar jogo</button><button class="primary-button" data-action="choose-table">Trocar modo</button></footer>
       </section>
 
       <section class="screen" data-screen="result" aria-labelledby="result-title">
         <div class="result-card glass-card">
           <div class="trophy" aria-hidden="true">🏆</div>
           <p class="eyebrow">Missão concluída</p>
-          <h2 id="result-title">Você juntou <span id="final-coins">0</span> <i class="coin-icon" aria-hidden="true"></i></h2>
+          <h2 id="result-title">Parabéns! Você finalizou o jogo</h2>
+          <p class="result-text" id="result-message"></p>
+          <p class="coin-total">Total: <strong id="final-coins">0</strong> <i class="coin-icon" aria-hidden="true"></i></p>
           <div class="prize-result" id="prize-result" hidden>
             <p class="prize-result-name" id="result-prize-name"></p>
-            <div class="progress-track prize-progress-track">
-              <span id="result-progress-bar"></span>
-            </div>
-            <div class="prize-result-counts">
-              <span id="result-coins-earned">0</span>
-              <span> / </span>
-              <span id="result-coins-needed">0</span>
-              <i class="coin-icon" aria-hidden="true"></i>
-            </div>
+            <div class="progress-track prize-progress-track"><span id="result-progress-bar"></span></div>
+            <div class="prize-result-counts"><span id="result-coins-earned">0</span><span> / </span><span id="result-coins-needed">0</span><i class="coin-icon" aria-hidden="true"></i></div>
             <p id="result-prize-msg" class="result-text"></p>
           </div>
-          <div class="result-actions">
-            <button class="primary-button" data-action="play-again">Jogar novamente</button>
-            <button class="ghost-button" data-action="back-home">Tela inicial</button>
-          </div>
+          <div class="result-actions"><button class="primary-button" data-action="play-again">Jogar novamente</button><button class="ghost-button" data-action="back-home">Tela inicial</button></div>
         </div>
       </section>
     </main>
 
-    <div class="speed-bonus" id="speed-bonus" aria-hidden="true">⚡ Bônus de Velocidade</div>
-    <div class="error-burst" id="error-burst" aria-hidden="true">Errou!</div>
+    <div class="milestone" id="milestone" aria-hidden="true"><span>⭐</span><strong id="milestone-title"></strong><small id="milestone-copy"></small></div>
+    <div class="speed-bonus" id="speed-bonus" aria-hidden="true">⚡ Bônus de velocidade</div>
+    <div class="error-burst" id="error-burst" aria-hidden="true">Quase!</div>
     <div class="confetti-layer" id="confetti-layer" aria-hidden="true"></div>
     <button class="music-toggle" id="music-toggle" data-action="toggle-music" aria-label="Silenciar música">🎵</button>
-    <script src="app.js?v=20260530-pwa-svg" defer></script>
+    <script src="app.js?v=20260803" defer></script>
   </body>
 </html>

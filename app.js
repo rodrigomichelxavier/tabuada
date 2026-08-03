@@ -1,26 +1,34 @@
 const TABLES = Array.from({ length: 9 }, (_, index) => index + 2);
 const MAX_MULTIPLIER = 10;
+const TOTAL_QUESTIONS = TABLES.length * MAX_MULTIPLIER;
 const COINS_PER_HIT = 1;
 const SPEED_BONUS_COINS = 1;
 const SPEED_BONUS_LIMIT_MS = 5000;
 const TABLE_BONUS = 10;
 
 const state = {
+  sessionMode: "knowledge",
+  gameMode: "sequence",
   selectedTable: 2,
-  isRandomMode: false,
+  tableOrder: [],
+  tableIndex: 0,
   currentTable: 2,
   currentMultiplier: 1,
   coins: 0,
   hitsInCurrentTable: new Set(),
-  answeredCurrentQuestion: false,
+  completedQuestions: new Set(),
+  randomQueue: [],
+  randomTableHits: new Map(),
   questionStartedAt: Date.now(),
   timerInterval: null,
+  transitionTimeout: null,
+  transitioning: false,
 };
 
-const prize = { name: '', coins: 0 };
+const prize = { name: "", coins: 0 };
 
 const music = (() => {
-  const audio = new Audio('assets/tabuadagame.mp3');
+  const audio = new Audio("assets/tabuadagame.mp3");
   audio.loop = true;
   audio.volume = 0.5;
 
@@ -32,7 +40,6 @@ const music = (() => {
       audio.muted = !audio.muted;
       return audio.muted;
     },
-    isMuted: () => audio.muted,
   };
 })();
 
@@ -44,7 +51,8 @@ const memoryTitle = document.querySelector("#memory-title");
 const memoryList = document.querySelector("#memory-list");
 const coinsElement = document.querySelector("#coins");
 const streakElement = document.querySelector("#streak");
-const minutesPreview = document.querySelector("#minutes-preview");
+const statusLabel = document.querySelector("#status-label");
+const journeyPreview = document.querySelector("#journey-preview");
 const timerElement = document.querySelector("#timer");
 const tableIndicator = document.querySelector("#table-indicator");
 const questionElement = document.querySelector("#question");
@@ -52,10 +60,16 @@ const answerForm = document.querySelector("#answer-form");
 const answerInput = document.querySelector("#answer-input");
 const feedback = document.querySelector("#feedback");
 const progressBar = document.querySelector("#progress-bar");
+const progressTrack = document.querySelector("#game-progress");
 const finalCoins = document.querySelector("#final-coins");
+const resultTitle = document.querySelector("#result-title");
+const resultMessage = document.querySelector("#result-message");
 const confettiLayer = document.querySelector("#confetti-layer");
 const errorBurst = document.querySelector("#error-burst");
 const speedBonus = document.querySelector("#speed-bonus");
+const milestone = document.querySelector("#milestone");
+const milestoneTitle = document.querySelector("#milestone-title");
+const milestoneCopy = document.querySelector("#milestone-copy");
 const prizeNameInput = document.querySelector("#prize-name-input");
 const prizeCoinsInput = document.querySelector("#prize-coins-input");
 const prizeCalc = document.querySelector("#prize-calc");
@@ -77,40 +91,63 @@ function showScreen(screenName) {
     screen.classList.toggle("active", screen.dataset.screen === screenName);
   });
 
-  if (screenName !== "play") {
-    stopQuestionTimer();
-  }
-
-  if (screenName === "play") {
-    focusAnswerInput(160);
-  }
+  if (screenName !== "play") stopQuestionTimer();
+  if (screenName === "play") focusAnswerInput(160);
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 }
 
 function renderTableOptions() {
   const tableButtons = TABLES.map((table) => `
     <button class="table-option" type="button" data-table="${table}">
       <strong>${table}</strong>
-      <span>Tabuada do ${table}</span>
+      <span>Começar pela tabuada do ${table}</span>
     </button>
   `).join("");
 
   tableOptions.innerHTML = `${tableButtons}
     <button class="table-option random" type="button" data-table="random">
       <strong>🎲</strong>
-      <span>Sortear tabuada</span>
+      <span><b>Modo sortido</b> · todas as 90 contas misturadas</span>
     </button>`;
 }
 
-function chooseTable(table) {
-  state.isRandomMode = table === "random";
+function resetJourney() {
+  clearTimeout(state.transitionTimeout);
+  state.tableOrder = [];
+  state.tableIndex = 0;
+  state.coins = 0;
+  state.hitsInCurrentTable = new Set();
+  state.completedQuestions = new Set();
+  state.randomQueue = [];
+  state.randomTableHits = new Map(TABLES.map((table) => [table, new Set()]));
+  state.transitioning = false;
+  hideMilestone();
+  updateScoreboard();
+}
 
-  if (state.isRandomMode) {
-    startRound(randomTable());
+function beginSession(mode) {
+  state.sessionMode = mode;
+  resetJourney();
+  if (mode === "knowledge") {
+    prize.name = "";
+    prize.coins = 0;
+    music.start();
+    showScreen("choose-table");
+  } else {
+    showScreen("prize-setup");
+  }
+}
+
+function chooseTable(table) {
+  if (table === "random") {
+    state.gameMode = "random";
+    startRandomJourney();
     return;
   }
 
+  state.gameMode = "sequence";
   state.selectedTable = Number(table);
-  selectedTableLabel.textContent = `Tabuada do ${state.selectedTable}`;
+  selectedTableLabel.textContent = `Começando pela tabuada do ${state.selectedTable}`;
   showScreen("choose-mode");
 }
 
@@ -122,73 +159,89 @@ function renderMemoryTable() {
   }).join("");
 }
 
-function resetTableProgress(table) {
-  state.currentTable = table;
-  state.currentMultiplier = randomMultiplier();
-  state.hitsInCurrentTable = new Set();
-  state.answeredCurrentQuestion = false;
-}
-
-function startRound(table = state.selectedTable) {
-  resetTableProgress(table);
-  setFeedback("Valendo! Responda rápido para ganhar bônus de velocidade.", "neutral");
-  renderQuestion();
+function startSequenceJourney() {
+  resetJourney();
+  const startIndex = TABLES.indexOf(state.selectedTable);
+  state.tableOrder = [...TABLES.slice(startIndex), ...TABLES.slice(0, startIndex)];
+  state.tableIndex = 0;
+  startTable(state.tableOrder[0]);
+  setFeedback("Valendo! Complete esta tabuada para avançar para a próxima.", "neutral");
   showScreen("play");
 }
 
-function renderQuestion(previousMultiplier = null) {
-  state.answeredCurrentQuestion = false;
-  const multiplier = pickUnansweredMultiplier(previousMultiplier);
-  state.currentMultiplier = multiplier;
-  tableIndicator.textContent = state.isRandomMode
-    ? `Tabuada sorteada: ${state.currentTable}`
-    : `Tabuada do ${state.currentTable}`;
+function startRandomJourney() {
+  resetJourney();
+  state.randomQueue = shuffle(TABLES.flatMap((table) => (
+    Array.from({ length: MAX_MULTIPLIER }, (_, index) => ({ table, multiplier: index + 1 }))
+  )));
+  setFeedback("Modo sortido! Acerte as 90 contas, sem deixar nenhuma para trás.", "neutral");
+  renderRandomQuestion();
+  showScreen("play");
+}
+
+function startTable(table) {
+  state.currentTable = table;
+  state.hitsInCurrentTable = new Set();
+  renderSequenceQuestion();
+}
+
+function renderSequenceQuestion(previousMultiplier = null) {
+  const unanswered = Array.from({ length: MAX_MULTIPLIER }, (_, index) => index + 1)
+    .filter((multiplier) => !state.hitsInCurrentTable.has(multiplier));
+  const withoutPrevious = unanswered.filter((multiplier) => multiplier !== previousMultiplier);
+  const options = withoutPrevious.length ? withoutPrevious : unanswered;
+  state.currentMultiplier = options[Math.floor(Math.random() * options.length)];
+  tableIndicator.textContent = `Tabuada do ${state.currentTable} · ${state.tableIndex + 1} de ${TABLES.length}`;
+  prepareQuestion();
+}
+
+function renderRandomQuestion() {
+  const question = state.randomQueue.shift();
+  state.currentTable = question.table;
+  state.currentMultiplier = question.multiplier;
+  tableIndicator.textContent = `Modo sortido · ${state.completedQuestions.size} de ${TOTAL_QUESTIONS} resolvidas`;
+  prepareQuestion();
+}
+
+function prepareQuestion() {
+  state.transitioning = false;
   questionElement.textContent = `${state.currentTable} × ${state.currentMultiplier}`;
   answerInput.value = "";
+  answerInput.disabled = false;
   updateScoreboard();
   startQuestionTimer();
   focusAnswerInput();
 }
 
-function pickUnansweredMultiplier(previousMultiplier = null) {
-  const unanswered = Array.from({ length: MAX_MULTIPLIER }, (_, index) => index + 1)
-    .filter((multiplier) => !state.hitsInCurrentTable.has(multiplier));
-  const options = unanswered.filter((multiplier) => multiplier !== previousMultiplier);
-  const availableMultipliers = options.length > 0 ? options : unanswered;
-
-  if (availableMultipliers.length === 0) {
-    return randomMultiplier();
-  }
-
-  return availableMultipliers[Math.floor(Math.random() * availableMultipliers.length)];
-}
-
 function checkAnswer(event) {
   event.preventDefault();
+  if (state.transitioning) return;
 
-  const answeredMultiplier = state.currentMultiplier;
-  const answeredTable = state.currentTable;
+  const table = state.currentTable;
+  const multiplier = state.currentMultiplier;
   const elapsedMs = Date.now() - state.questionStartedAt;
-  const givenAnswer = Number(answerInput.value);
-  const rightAnswer = answeredTable * answeredMultiplier;
+  const rightAnswer = table * multiplier;
 
-  if (givenAnswer === rightAnswer) {
-    rewardCorrectAnswer(elapsedMs);
+  if (Number(answerInput.value) === rightAnswer) {
+    rewardCorrectAnswer(table, multiplier, elapsedMs);
     return;
   }
 
-  setFeedback(`Errou! ${answeredTable} × ${answeredMultiplier} = ${rightAnswer}. Bora para a próxima!`, "error");
+  setFeedback(`Quase! ${table} × ${multiplier} = ${rightAnswer}. Essa conta voltará depois.`, "error");
   showErrorEvent();
-  showNextQuestion(answeredMultiplier);
+  if (state.gameMode === "random") {
+    state.randomQueue.push({ table, multiplier });
+    renderRandomQuestion();
+  } else {
+    renderSequenceQuestion(multiplier);
+  }
 }
 
-function rewardCorrectAnswer(elapsedMs) {
-  const completedTable = state.currentTable;
+function rewardCorrectAnswer(table, multiplier, elapsedMs) {
+  const key = `${table}x${multiplier}`;
   let earnedCoins = COINS_PER_HIT;
-
   state.coins += COINS_PER_HIT;
-  state.hitsInCurrentTable.add(state.currentMultiplier);
-  state.answeredCurrentQuestion = true;
+  state.completedQuestions.add(key);
 
   if (elapsedMs < SPEED_BONUS_LIMIT_MS) {
     state.coins += SPEED_BONUS_COINS;
@@ -196,163 +249,182 @@ function rewardCorrectAnswer(elapsedMs) {
     showSpeedBonus();
   }
 
-  const tableCompletedNow = state.hitsInCurrentTable.size === MAX_MULTIPLIER;
+  if (state.gameMode === "random") {
+    const tableHits = state.randomTableHits.get(table);
+    tableHits.add(multiplier);
+    const completedTableNow = tableHits.size === MAX_MULTIPLIER;
+    if (completedTableNow) {
+      state.coins += TABLE_BONUS;
+      earnedCoins += TABLE_BONUS;
+      tableHits.add("bonus-awarded");
+      showMilestone(`Tabuada do ${table} completa!`, `+${TABLE_BONUS} moedas de bônus`);
+    }
+    updateScoreboard();
+    burstConfetti(completedTableNow ? 48 : 16);
 
-  if (tableCompletedNow) {
-    state.coins += TABLE_BONUS;
-    earnedCoins += TABLE_BONUS;
-    setFeedback(`Você completou a tabuada do ${completedTable}! +${TABLE_BONUS} moedas de gabarito!`, "success");
-    burstConfetti(48);
-  } else {
+    if (state.completedQuestions.size === TOTAL_QUESTIONS) {
+      completeJourney();
+    } else {
+      setFeedback(`Acertou! +${earnedCoins} ${earnedCoins === 1 ? "moeda" : "moedas"}.`, "success");
+      renderRandomQuestion();
+    }
+    return;
+  }
+
+  state.hitsInCurrentTable.add(multiplier);
+  const completedTableNow = state.hitsInCurrentTable.size === MAX_MULTIPLIER;
+  if (!completedTableNow) {
     setFeedback(`Acertou! +${earnedCoins} ${earnedCoins === 1 ? "moeda" : "moedas"}.`, "success");
     burstConfetti(16);
+    renderSequenceQuestion(multiplier);
+    return;
   }
 
-  showNextQuestion(state.currentMultiplier);
+  state.coins += TABLE_BONUS;
+  updateScoreboard();
+  burstConfetti(48);
+  if (state.tableIndex === state.tableOrder.length - 1) {
+    completeJourney();
+    return;
+  }
+
+  const completedTable = state.currentTable;
+  const nextTable = state.tableOrder[state.tableIndex + 1];
+  state.transitioning = true;
+  answerInput.disabled = true;
+  stopQuestionTimer();
+  setFeedback(`Tabuada do ${completedTable} completa! Pontos contabilizados.`, "success");
+  showMilestone(`Mandou bem na tabuada do ${completedTable}!`, `Agora vamos para a tabuada do ${nextTable}.`);
+  state.transitionTimeout = setTimeout(() => {
+    hideMilestone();
+    state.tableIndex += 1;
+    startTable(nextTable);
+  }, 1700);
 }
 
-function showNextQuestion(previousMultiplier) {
-  if (state.hitsInCurrentTable.size === MAX_MULTIPLIER) {
-    if (state.isRandomMode) {
-      resetTableProgress(randomTable());
-    } else {
-      state.hitsInCurrentTable = new Set();
-    }
-  }
-
-  renderQuestion(previousMultiplier);
+function completeJourney() {
+  state.transitioning = true;
+  updateScoreboard();
+  burstConfetti(90);
+  setTimeout(() => finishGame(true), 450);
 }
 
 function chooseAnotherTable() {
   stopQuestionTimer();
-  state.isRandomMode = false;
+  clearTimeout(state.transitionTimeout);
+  resetJourney();
+  setFeedback("Escolha como quer começar a nova jornada!", "neutral");
   showScreen("choose-table");
-  setFeedback("Escolha outra tabuada para continuar acumulando moedas!", "neutral");
 }
 
 function updatePrizeCalc() {
   const name = prizeNameInput.value.trim();
   const coins = parseInt(prizeCoinsInput.value, 10);
+  const valid = Boolean(name && coins >= 1);
+  prizeCalc.hidden = !valid;
+  startAdventureBtn.hidden = !valid;
+  if (!valid) return;
 
-  if (!name || !coins || coins < 1) {
-    prizeCalc.hidden = true;
-    startAdventureBtn.hidden = true;
-    return;
-  }
-
-  prizeDisplayName.textContent = `"${name}"`;
+  prizeDisplayName.textContent = `“${name}”`;
   calcNormal.textContent = coins;
   calcSpeed.textContent = Math.ceil(coins / 2);
   calcTables.textContent = Math.ceil(coins / 20);
-
-  prizeCalc.hidden = false;
-  startAdventureBtn.hidden = false;
 }
 
 function startAdventure() {
   const name = prizeNameInput.value.trim();
   const coins = parseInt(prizeCoinsInput.value, 10);
-  if (!name || !coins || coins < 1) return;
-
+  if (!name || coins < 1) return;
   prize.name = name;
   prize.coins = coins;
+  state.sessionMode = "prize";
+  resetJourney();
   music.start();
   showScreen("choose-table");
 }
 
 function updateScoreboard() {
+  if (!coinsElement) return;
+  const completed = state.completedQuestions.size;
   coinsElement.textContent = state.coins;
-  streakElement.textContent = `${state.hitsInCurrentTable.size}/${MAX_MULTIPLIER}`;
-  const pct = prize.coins > 0 ? Math.min(100, Math.round((state.coins / prize.coins) * 100)) : 0;
-  minutesPreview.textContent = `${pct}%`;
-  progressBar.style.width = `${(state.hitsInCurrentTable.size / MAX_MULTIPLIER) * 100}%`;
+  streakElement.textContent = state.gameMode === "random"
+    ? `${completed}/${TOTAL_QUESTIONS}`
+    : `${state.hitsInCurrentTable.size}/${MAX_MULTIPLIER}`;
+
+  const journeyPct = Math.round((completed / TOTAL_QUESTIONS) * 100);
+  if (state.sessionMode === "prize" && prize.coins > 0) {
+    statusLabel.textContent = "Prêmio";
+    journeyPreview.textContent = `${Math.min(100, Math.round((state.coins / prize.coins) * 100))}%`;
+  } else {
+    statusLabel.textContent = "Jornada";
+    journeyPreview.textContent = `${journeyPct}%`;
+  }
+
+  const currentProgress = state.gameMode === "random"
+    ? (completed / TOTAL_QUESTIONS) * 100
+    : (state.hitsInCurrentTable.size / MAX_MULTIPLIER) * 100;
+  progressBar.style.width = `${currentProgress}%`;
+  progressTrack.setAttribute("aria-valuenow", String(Math.round(currentProgress)));
 }
 
-function finishGame() {
+function finishGame(completed = false) {
   stopQuestionTimer();
-  const earned = state.coins;
-  finalCoins.textContent = earned;
+  clearTimeout(state.transitionTimeout);
+  hideMilestone();
+  finalCoins.textContent = state.coins;
+  resultTitle.textContent = completed ? "Parabéns! Você finalizou o jogo" : "Jogo encerrado";
+  resultMessage.textContent = completed
+    ? `Você resolveu todas as ${TOTAL_QUESTIONS} contas e somou ${state.coins} moedas!`
+    : `Você praticou ${state.completedQuestions.size} contas e somou ${state.coins} moedas.`;
 
-  if (prize.name) {
-    const needed = prize.coins;
-    const pct = Math.min(100, (earned / needed) * 100);
-    resultPrizeName.innerHTML = `🎁 ${prize.name} (${needed} <i class="coin-icon" aria-hidden="true"></i>)`;
+  if (state.sessionMode === "prize" && prize.name) {
+    const pct = Math.min(100, (state.coins / prize.coins) * 100);
+    resultPrizeName.textContent = `🎁 ${prize.name}`;
     resultProgressBar.style.width = `${pct}%`;
-    resultCoinsEarned.textContent = earned;
-    resultCoinsNeeded.textContent = needed;
-
-    if (earned >= needed) {
-      resultPrizeMsg.textContent = '🎉 Missão cumprida! Você conquistou o prêmio!';
-    } else {
-      const diff = needed - earned;
-      resultPrizeMsg.textContent = `Faltam ${diff} moedas para conquistar o prêmio!`;
-    }
+    resultCoinsEarned.textContent = state.coins;
+    resultCoinsNeeded.textContent = prize.coins;
+    resultPrizeMsg.textContent = state.coins >= prize.coins
+      ? "🎉 Missão cumprida! Você conquistou o prêmio!"
+      : `Faltam ${prize.coins - state.coins} moedas para conquistar o prêmio!`;
     prizeResultEl.hidden = false;
   } else {
     prizeResultEl.hidden = true;
   }
 
-  burstConfetti(64);
   showScreen("result");
 }
 
-function playAgain() {
-  stopQuestionTimer();
-  state.coins = 0;
-  state.hitsInCurrentTable = new Set();
-  state.answeredCurrentQuestion = false;
-  updateScoreboard();
-  showScreen("choose-table");
-}
-
 function resetGame() {
+  resetJourney();
   stopQuestionTimer();
   state.selectedTable = 2;
-  state.isRandomMode = false;
-  state.currentTable = 2;
-  state.currentMultiplier = 1;
-  state.coins = 0;
-  state.hitsInCurrentTable = new Set();
-  state.answeredCurrentQuestion = false;
-  prize.name = '';
+  state.gameMode = "sequence";
+  state.sessionMode = "knowledge";
+  prize.name = "";
   prize.coins = 0;
-  prizeNameInput.value = '';
-  prizeCoinsInput.value = '';
+  prizeNameInput.value = "";
+  prizeCoinsInput.value = "";
   prizeCalc.hidden = true;
   startAdventureBtn.hidden = true;
-  updateScoreboard();
   showScreen("home");
 }
 
 function setFeedback(message, type) {
   feedback.textContent = message;
   feedback.className = "feedback";
-
-  if (type === "success" || type === "error") {
-    feedback.classList.add(type);
-  }
+  if (type === "success" || type === "error") feedback.classList.add(type);
 }
 
 function focusAnswerInput(delay = 0) {
   const focus = () => {
-    if (!document.querySelector('[data-screen="play"]').classList.contains("active")) {
-      return;
-    }
-
+    if (!document.querySelector('[data-screen="play"]').classList.contains("active") || answerInput.disabled) return;
     answerInput.focus({ preventScroll: true });
     answerInput.select();
     document.body.classList.add("keyboard-mode");
-    requestAnimationFrame(() => {
-      appShell.scrollIntoView({ block: "start", behavior: "auto" });
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    });
+    requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
   };
-
-  if (delay > 0) {
-    setTimeout(focus, delay);
-  } else {
-    focus();
-  }
+  if (delay > 0) setTimeout(focus, delay);
+  else focus();
 }
 
 function startQuestionTimer() {
@@ -363,15 +435,26 @@ function startQuestionTimer() {
 }
 
 function stopQuestionTimer() {
-  if (state.timerInterval) {
-    clearInterval(state.timerInterval);
-    state.timerInterval = null;
-  }
+  if (!state.timerInterval) return;
+  clearInterval(state.timerInterval);
+  state.timerInterval = null;
 }
 
 function updateTimer() {
-  const seconds = Math.floor((Date.now() - state.questionStartedAt) / 1000);
-  timerElement.textContent = `${seconds}s`;
+  timerElement.textContent = `${Math.floor((Date.now() - state.questionStartedAt) / 1000)}s`;
+}
+
+function showMilestone(title, copy) {
+  milestoneTitle.textContent = title;
+  milestoneCopy.textContent = copy;
+  milestone.classList.add("show");
+  milestone.setAttribute("aria-hidden", "false");
+  setTimeout(hideMilestone, 1500);
+}
+
+function hideMilestone() {
+  milestone.classList.remove("show");
+  milestone.setAttribute("aria-hidden", "true");
 }
 
 function showErrorEvent() {
@@ -393,17 +476,17 @@ function showSpeedBonus() {
   setTimeout(() => speedBonus.classList.remove("show"), 1100);
 }
 
-function randomTable() {
-  return TABLES[Math.floor(Math.random() * TABLES.length)];
-}
-
-function randomMultiplier() {
-  return Math.floor(Math.random() * MAX_MULTIPLIER) + 1;
+function shuffle(items) {
+  const result = [...items];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [result[index], result[randomIndex]] = [result[randomIndex], result[index]];
+  }
+  return result;
 }
 
 function burstConfetti(amount) {
-  const colors = ["#9B5DE5", "#F15BB5", "#FEE440", "#00BBF9", "#00F5D4"];
-
+  const colors = ["#ffb515", "#18d1b1", "#f14add", "#26c6f3", "#f24649"];
   for (let index = 0; index < amount; index += 1) {
     const piece = document.createElement("span");
     piece.className = "confetti";
@@ -418,46 +501,40 @@ function burstConfetti(amount) {
 
 function bindEvents() {
   document.addEventListener("click", (event) => {
-    const actionButton = event.target.closest("[data-action]");
     const tableButton = event.target.closest("[data-table]");
     const modeButton = event.target.closest("[data-mode]");
+    const actionButton = event.target.closest("[data-action]");
 
-    if (tableButton) {
-      chooseTable(tableButton.dataset.table);
-      return;
-    }
-
+    if (tableButton) return chooseTable(tableButton.dataset.table);
     if (modeButton) {
       if (modeButton.dataset.mode === "memorize") {
         renderMemoryTable();
         showScreen("memorize");
-      } else {
-        startRound(state.selectedTable);
-      }
+      } else startSequenceJourney();
       return;
     }
-
-    if (!actionButton) {
-      return;
-    }
+    if (!actionButton) return;
 
     const actions = {
-      start: () => showScreen("prize-setup"),
+      "start-practice": () => beginSession("knowledge"),
+      "start-prize": () => beginSession("prize"),
       "start-adventure": startAdventure,
       "back-home": resetGame,
       "back-tables": () => showScreen("choose-table"),
       "back-mode": () => showScreen("choose-mode"),
-      "ready-play": () => startRound(state.selectedTable),
+      "ready-play": startSequenceJourney,
       "choose-table": chooseAnotherTable,
-      finish: finishGame,
-      "play-again": playAgain,
+      finish: () => finishGame(false),
+      "play-again": () => {
+        resetJourney();
+        showScreen("choose-table");
+      },
       "toggle-music": () => {
         const isMuted = music.toggleMute();
-        musicToggleBtn.textContent = isMuted ? '🔇' : '🎵';
+        musicToggleBtn.textContent = isMuted ? "🔇" : "🎵";
         musicToggleBtn.setAttribute("aria-label", isMuted ? "Ativar música" : "Silenciar música");
       },
     };
-
     actions[actionButton.dataset.action]?.();
   });
 
@@ -473,12 +550,16 @@ bindEvents();
 updateScoreboard();
 
 function registerServiceWorker() {
-  if (!("serviceWorker" in navigator)) {
-    return;
-  }
-
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js");
+  if (!("serviceWorker" in navigator)) return;
+  window.addEventListener("load", async () => {
+    try {
+      const registration = await navigator.serviceWorker.register("./service-worker.js?v=20260803", {
+        updateViaCache: "none",
+      });
+      await registration.update();
+    } catch (error) {
+      console.warn("Não foi possível ativar o modo offline.", error);
+    }
   });
 }
 
