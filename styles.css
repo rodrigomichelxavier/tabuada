@@ -136,6 +136,24 @@ h2 { margin: 0; font-size: clamp(2rem, 8vw, 3.6rem); }
 .menu-button strong { font-family: "Baloo 2", sans-serif; font-size: clamp(1.25rem, 5vw, 1.75rem); line-height: 1.05; text-shadow: 0 2px 0 rgba(0,0,0,.13); }
 .menu-button small { margin-top: 4px; color: rgba(255,255,255,.86); font-size: .78rem; font-weight: 800; }
 
+.dedication-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 28px;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: rgba(255,255,255,.86);
+  background: rgba(4,42,116,.28);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+  font-size: .82rem;
+  font-weight: 900;
+  transition: color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+.dedication-trigger span { color: #ffb5d8; font-size: 1rem; }
+.dedication-trigger:hover { color: white; background: rgba(4,42,116,.48); transform: translateY(-2px); }
+
 .spark { position: fixed; z-index: 0; color: rgba(255,255,255,.12); font: 900 8rem "Baloo 2"; }
 .spark-one { top: 3%; left: 4%; transform: rotate(-18deg); }
 .spark-two { right: 4%; bottom: 3%; transform: rotate(14deg); }
@@ -266,6 +284,44 @@ input:disabled { opacity: .55; }
 .confetti { position: absolute; top: -16px; width: 10px; height: 16px; border-radius: 4px; animation: confettiFall 900ms ease-out forwards; }
 .music-toggle { position: fixed; right: 15px; bottom: 16px; z-index: 21; display: grid; place-items: center; width: 48px; height: 48px; border: 2px solid rgba(255,255,255,.7); border-radius: 50%; background: rgba(255,255,255,.94); box-shadow: 0 7px 18px rgba(3,27,79,.26); font-size: 1.3rem; }
 
+body.modal-open { overflow: hidden; }
+.dedication-modal[hidden] { display: none; }
+.dedication-modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; }
+.dedication-backdrop { position: absolute; inset: 0; background: rgba(3,12,35,.78); backdrop-filter: blur(8px); animation: backdropIn 240ms ease both; }
+.dedication-plaque {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(190px, .78fr) minmax(280px, 1.22fr);
+  width: min(100%, 790px);
+  max-height: min(86vh, 570px);
+  overflow: hidden;
+  border: 7px ridge #e3b960;
+  border-radius: 16px;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,.035) 4px, rgba(78,42,5,.025) 5px),
+    linear-gradient(135deg, #8c5b1f 0%, #e8bd68 18%, #a97731 43%, #f1d587 67%, #90601f 100%);
+  box-shadow: inset 0 0 0 3px rgba(74,43,9,.45), inset 0 0 32px rgba(74,39,3,.44), 0 32px 80px rgba(0,0,0,.58);
+  animation: plaqueIn 360ms cubic-bezier(.2,.8,.2,1) both;
+  outline: none;
+}
+.dedication-photo { min-height: 390px; margin: 19px 0 19px 19px; overflow: hidden; border: 5px solid #5e380f; border-radius: 8px; box-shadow: 0 0 0 2px #f0d185, 0 8px 22px rgba(56,29,3,.42); }
+.dedication-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 42%; }
+.dedication-copy { display: flex; flex-direction: column; justify-content: center; padding: 52px 46px; color: #40280e; text-align: center; text-shadow: 0 1px 0 rgba(255,238,186,.55); }
+.plaque-kicker { margin: 0 0 8px; color: #654316; font-size: .7rem; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+.dedication-copy h2 { color: #3e270d; font-size: clamp(2.3rem,6vw,3.8rem); text-transform: uppercase; letter-spacing: .03em; }
+.plaque-divider { display: flex; align-items: center; gap: 12px; margin: 14px 0; color: #6b4315; font-size: .9rem; }
+.plaque-divider::before, .plaque-divider::after { content: ""; flex: 1; height: 1px; background: rgba(73,42,8,.55); box-shadow: 0 1px rgba(255,238,186,.52); }
+.dedication-copy > p:not(.plaque-kicker):not(.alice-signature) { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(.96rem,2.1vw,1.16rem); line-height: 1.62; }
+.alice-signature { margin: 18px 0 0; color: #3c240b; font: 800 clamp(1.35rem,3vw,1.85rem)/1.1 "Baloo 2",sans-serif; }
+.dedication-close { position: absolute; top: 13px; right: 13px; z-index: 3; display: grid; place-items: center; width: 38px; height: 38px; border: 2px solid rgba(69,38,5,.62); border-radius: 50%; color: #4d2e0b; background: linear-gradient(145deg,#f3d788,#a97934); box-shadow: inset 0 1px rgba(255,244,203,.75), 0 3px 7px rgba(61,32,2,.35); font-size: 1.7rem; line-height: 1; }
+.dedication-close:hover { filter: brightness(1.08); transform: scale(1.05); }
+.plaque-rivet { position: absolute; z-index: 2; width: 14px; height: 14px; border: 2px solid #67400f; border-radius: 50%; background: radial-gradient(circle at 35% 30%,#fff0b1,#a16c27 65%,#5e390d); box-shadow: 0 2px 3px rgba(52,28,3,.45); }
+.rivet-one { top: 12px; left: 12px; }
+.rivet-two { top: 12px; right: 58px; }
+.rivet-three { bottom: 12px; left: 12px; }
+.rivet-four { right: 12px; bottom: 12px; }
+
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes float { 50% { transform: translateY(-9px) rotate(4deg); } }
 @keyframes pop { 0% { transform: scale(.9); } 70% { transform: scale(1.05); } }
@@ -274,6 +330,8 @@ input:disabled { opacity: .55; }
 @keyframes speedBonus { 15%,78% { opacity:1; transform:translateX(0); } 0%,100% { opacity:0; transform:translateX(130%); } }
 @keyframes errorBurst { 18%,72% { opacity:1; transform:translate(-50%,-50%) scale(1.04) rotate(2deg); } 0%,100% { opacity:0; transform:translate(-50%,-50%) scale(.5) rotate(-7deg); } }
 @keyframes confettiFall { to { transform:translate3d(var(--drift),105vh,0) rotate(540deg); opacity:0; } }
+@keyframes backdropIn { from { opacity: 0; } }
+@keyframes plaqueIn { from { opacity: 0; transform: translateY(22px) scale(.94); } }
 .screen-shake { animation: shake 420ms ease; }
 
 @media (min-width: 680px) {
@@ -317,6 +375,20 @@ input:disabled { opacity: .55; }
   .bottom-actions { gap:6px; padding:9px 10px calc(9px + env(safe-area-inset-bottom)); }
   .bottom-actions button { min-height:47px; padding:8px; border-radius:14px; font-size:.8rem; }
   .music-toggle { width:42px; height:42px; bottom:68px; }
+}
+
+@media (max-width: 560px) {
+  .dedication-modal { padding: 12px; }
+  .dedication-plaque { grid-template-columns: minmax(105px,.72fr) minmax(0,1.28fr); max-height: 82vh; border-width: 5px; }
+  .dedication-photo { min-height: 330px; margin: 15px 0 15px 15px; border-width: 3px; }
+  .dedication-copy { padding: 48px 22px 38px; }
+  .plaque-kicker { font-size: .57rem; letter-spacing: .1em; }
+  .dedication-copy h2 { font-size: clamp(1.75rem,9vw,2.5rem); }
+  .plaque-divider { margin: 10px 0; }
+  .dedication-copy > p:not(.plaque-kicker):not(.alice-signature) { font-size: clamp(.78rem,3.7vw,.95rem); line-height: 1.48; }
+  .alice-signature { margin-top: 13px; font-size: clamp(1rem,5vw,1.35rem); }
+  .dedication-close { top: 9px; right: 9px; width: 34px; height: 34px; }
+  .rivet-two { display: none; }
 }
 
 @media (max-width: 679px) and (max-height: 720px) {

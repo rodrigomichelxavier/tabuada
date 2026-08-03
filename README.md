@@ -15,6 +15,8 @@ Jogo web mobile-first para crianças praticarem as tabuadas de 2 a 10 de forma g
 
 Cada acerto vale uma moeda, respostas em menos de cinco segundos recebem uma moeda adicional e cada tabuada completa rende dez moedas de bônus.
 
+Na tela inicial, o botão **Para Alice** abre a placa comemorativa que conta a inspiração afetiva por trás do jogo.
+
 ## Atualização e uso offline
 
 O projeto é uma PWA. O service worker tenta buscar primeiro a versão mais recente dos arquivos e usa o cache somente quando não há rede. Quando uma nova versão do service worker é ativada, os caches anteriores são removidos e as páginas abertas são atualizadas automaticamente.

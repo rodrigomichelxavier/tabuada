@@ -13,8 +13,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;900&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="assets/calculator-icon.svg" />
-    <link rel="manifest" href="manifest.webmanifest?v=20260803" />
-    <link rel="stylesheet" href="styles.css?v=20260803" />
+    <link rel="manifest" href="manifest.webmanifest?v=20260803-dedication" />
+    <link rel="stylesheet" href="styles.css?v=20260803-dedication" />
   </head>
   <body>
     <main class="app-shell" id="app">
@@ -36,6 +36,9 @@
               <span><strong>Disputar por um prêmio</strong><small>Combine uma recompensa com seus responsáveis</small></span>
             </button>
           </div>
+          <button class="dedication-trigger" id="dedication-trigger" data-action="open-dedication" aria-haspopup="dialog" aria-expanded="false">
+            <span aria-hidden="true">♥</span> Para Alice
+          </button>
         </div>
       </section>
 
@@ -142,11 +145,32 @@
       </section>
     </main>
 
+    <div class="dedication-modal" id="dedication-modal" hidden>
+      <div class="dedication-backdrop" data-action="close-dedication" aria-hidden="true"></div>
+      <section class="dedication-plaque" id="dedication-plaque" role="dialog" aria-modal="true" aria-labelledby="dedication-title" tabindex="-1">
+        <span class="plaque-rivet rivet-one" aria-hidden="true"></span>
+        <span class="plaque-rivet rivet-two" aria-hidden="true"></span>
+        <span class="plaque-rivet rivet-three" aria-hidden="true"></span>
+        <span class="plaque-rivet rivet-four" aria-hidden="true"></span>
+        <button class="dedication-close" data-action="close-dedication" aria-label="Fechar homenagem">×</button>
+        <div class="dedication-photo">
+          <img src="assets/rodrigo-e-alice.png" alt="Rodrigo Xavier e sua filha Alice" />
+        </div>
+        <div class="dedication-copy">
+          <p class="plaque-kicker">Uma história feita com amor</p>
+          <h2 id="dedication-title">Para Alice</h2>
+          <span class="plaque-divider" aria-hidden="true">♥</span>
+          <p>Desenvolvido por <strong>Rodrigo Xavier</strong>, especialmente para a luz que trouxe alegria na sua vida para sempre:</p>
+          <p class="alice-signature">Minha pequena e bela Alice.</p>
+        </div>
+      </section>
+    </div>
+
     <div class="milestone" id="milestone" aria-hidden="true"><span>⭐</span><strong id="milestone-title"></strong><small id="milestone-copy"></small></div>
     <div class="speed-bonus" id="speed-bonus" aria-hidden="true">⚡ Bônus de velocidade</div>
     <div class="error-burst" id="error-burst" aria-hidden="true">Quase!</div>
     <div class="confetti-layer" id="confetti-layer" aria-hidden="true"></div>
     <button class="music-toggle" id="music-toggle" data-action="toggle-music" aria-label="Silenciar música">🎵</button>
-    <script src="app.js?v=20260803" defer></script>
+    <script src="app.js?v=20260803-dedication" defer></script>
   </body>
 </html>

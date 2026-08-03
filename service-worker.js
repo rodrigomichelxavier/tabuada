@@ -1,12 +1,13 @@
-const CACHE_NAME = "tabuada-quest-v20260803";
+const CACHE_NAME = "tabuada-quest-v20260803-dedication";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=20260803",
-  "./app.js?v=20260803",
-  "./manifest.webmanifest?v=20260803",
+  "./styles.css?v=20260803-dedication",
+  "./app.js?v=20260803-dedication",
+  "./manifest.webmanifest?v=20260803-dedication",
   "./assets/calculator-icon.svg",
   "./assets/tabuadagame.mp3",
+  "./assets/rodrigo-e-alice.png",
 ];
 
 self.addEventListener("install", (event) => {

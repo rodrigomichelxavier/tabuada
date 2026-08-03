@@ -85,6 +85,10 @@ const resultCoinsEarned = document.querySelector("#result-coins-earned");
 const resultCoinsNeeded = document.querySelector("#result-coins-needed");
 const resultPrizeMsg = document.querySelector("#result-prize-msg");
 const musicToggleBtn = document.querySelector("#music-toggle");
+const dedicationModal = document.querySelector("#dedication-modal");
+const dedicationPlaque = document.querySelector("#dedication-plaque");
+const dedicationTrigger = document.querySelector("#dedication-trigger");
+let dedicationReturnFocus = null;
 
 function showScreen(screenName) {
   screens.forEach((screen) => {
@@ -94,6 +98,22 @@ function showScreen(screenName) {
   if (screenName !== "play") stopQuestionTimer();
   if (screenName === "play") focusAnswerInput(160);
   window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+}
+
+function openDedication() {
+  dedicationReturnFocus = document.activeElement;
+  dedicationModal.hidden = false;
+  dedicationTrigger.setAttribute("aria-expanded", "true");
+  document.body.classList.add("modal-open");
+  requestAnimationFrame(() => dedicationPlaque.focus({ preventScroll: true }));
+}
+
+function closeDedication() {
+  if (dedicationModal.hidden) return;
+  dedicationModal.hidden = true;
+  dedicationTrigger.setAttribute("aria-expanded", "false");
+  document.body.classList.remove("modal-open");
+  dedicationReturnFocus?.focus?.({ preventScroll: true });
 }
 
 function renderTableOptions() {
@@ -518,6 +538,8 @@ function bindEvents() {
     const actions = {
       "start-practice": () => beginSession("knowledge"),
       "start-prize": () => beginSession("prize"),
+      "open-dedication": openDedication,
+      "close-dedication": closeDedication,
       "start-adventure": startAdventure,
       "back-home": resetGame,
       "back-tables": () => showScreen("choose-table"),
@@ -543,6 +565,9 @@ function bindEvents() {
   answerInput.addEventListener("blur", () => document.body.classList.remove("keyboard-mode"));
   prizeNameInput.addEventListener("input", updatePrizeCalc);
   prizeCoinsInput.addEventListener("input", updatePrizeCalc);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeDedication();
+  });
 }
 
 renderTableOptions();
@@ -553,7 +578,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./service-worker.js?v=20260803", {
+      const registration = await navigator.serviceWorker.register("./service-worker.js?v=20260803-dedication", {
         updateViaCache: "none",
       });
       await registration.update();
