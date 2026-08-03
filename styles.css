@@ -337,6 +337,14 @@ body.modal-open { overflow: hidden; }
 @media (min-width: 680px) {
   .app-shell { padding: 28px; }
   .screen { min-height: calc(100vh - 56px); }
+  .hero-card { padding-top: 8px; padding-bottom: 18px; }
+  .brand-mark { font-size: 5.2rem; }
+  h1 span { font-size: 4rem; }
+  h1 strong { font-size: 4.6rem; }
+  .hero-copy { margin-top: 9px; }
+  .home-actions { gap: 14px; margin-top: 30px; }
+  .menu-button { min-height: 80px; padding-top: 10px; padding-bottom: 10px; }
+  .dedication-trigger { margin-top: 18px; }
   .choice-grid { grid-template-columns: repeat(3,1fr); }
   .table-option.random { grid-column: auto; }
   .mode-cards { grid-template-columns: repeat(2,1fr); }
@@ -379,9 +387,10 @@ body.modal-open { overflow: hidden; }
 
 @media (max-width: 560px) {
   .dedication-modal { padding: 12px; }
-  .dedication-plaque { grid-template-columns: minmax(105px,.72fr) minmax(0,1.28fr); max-height: 82vh; border-width: 5px; }
-  .dedication-photo { min-height: 330px; margin: 15px 0 15px 15px; border-width: 3px; }
-  .dedication-copy { padding: 48px 22px 38px; }
+  .dedication-plaque { display: block; width: min(100%,430px); max-height: 92vh; overflow-y: auto; border-width: 5px; }
+  .dedication-photo { min-height: 0; margin: 42px 15px 0; border-width: 3px; background: #2b2117; }
+  .dedication-photo img { width: 100%; height: auto; object-fit: contain; object-position: center; }
+  .dedication-copy { padding: 25px 22px 34px; }
   .plaque-kicker { font-size: .57rem; letter-spacing: .1em; }
   .dedication-copy h2 { font-size: clamp(1.75rem,9vw,2.5rem); }
   .plaque-divider { margin: 10px 0; }
