@@ -387,15 +387,15 @@ body.modal-open { overflow: hidden; }
 
 @media (max-width: 560px) {
   .dedication-modal { padding: 12px; }
-  .dedication-plaque { display: block; width: min(100%,430px); max-height: 92vh; overflow-y: auto; border-width: 5px; }
-  .dedication-photo { min-height: 0; margin: 42px 15px 0; border-width: 3px; background: #2b2117; }
-  .dedication-photo img { width: 100%; height: auto; object-fit: contain; object-position: center; }
-  .dedication-copy { padding: 25px 22px 34px; }
+  .dedication-plaque { display: grid; grid-template-columns: minmax(100px,.68fr) minmax(0,1.32fr); width: min(100%,430px); max-height: calc(100vh - 24px); overflow: hidden; border-width: 5px; }
+  .dedication-photo { display: grid; place-items: center; min-height: 240px; margin: 18px 0 18px 14px; border-width: 3px; background: #2b2117; }
+  .dedication-photo img { width: 100%; height: 100%; object-fit: contain; object-position: center; }
+  .dedication-copy { padding: 46px 18px 30px; }
   .plaque-kicker { font-size: .57rem; letter-spacing: .1em; }
-  .dedication-copy h2 { font-size: clamp(1.75rem,9vw,2.5rem); }
-  .plaque-divider { margin: 10px 0; }
-  .dedication-copy > p:not(.plaque-kicker):not(.alice-signature) { font-size: clamp(.78rem,3.7vw,.95rem); line-height: 1.48; }
-  .alice-signature { margin-top: 13px; font-size: clamp(1rem,5vw,1.35rem); }
+  .dedication-copy h2 { font-size: clamp(1.6rem,8vw,2.25rem); }
+  .plaque-divider { margin: 8px 0; }
+  .dedication-copy > p:not(.plaque-kicker):not(.alice-signature) { font-size: clamp(.72rem,3.25vw,.9rem); line-height: 1.42; }
+  .alice-signature { margin-top: 11px; font-size: clamp(.94rem,4.6vw,1.25rem); }
   .dedication-close { top: 9px; right: 9px; width: 34px; height: 34px; }
   .rivet-two { display: none; }
 }

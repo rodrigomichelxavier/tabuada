@@ -1,8 +1,8 @@
-const CACHE_NAME = "tabuada-quest-v20260803-dedication-2";
+const CACHE_NAME = "tabuada-quest-v20260803-dedication-3";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=20260803-dedication-2",
+  "./styles.css?v=20260803-dedication-3",
   "./app.js?v=20260803-dedication",
   "./manifest.webmanifest?v=20260803-dedication",
   "./assets/calculator-icon.svg",
